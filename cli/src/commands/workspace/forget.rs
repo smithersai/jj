@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
+
 use clap_complete::ArgValueCandidates;
 use itertools::Itertools as _;
 use jj_lib::ref_name::WorkspaceNameBuf;
@@ -74,6 +78,15 @@ pub async fn cmd_workspace_forget(
 
     let workspace_store = SimpleWorkspaceStore::load(workspace_command.repo_path())?;
 
+    let repo_path = workspace_command.repo_path();
+    let workspace_paths: Vec<_> = forget_ws
+        .iter()
+        .filter_map(|ws| {
+            let rel_path = workspace_store.get_workspace_path(ws).ok().flatten()?;
+            dunce::canonicalize(repo_path.join(rel_path)).ok()
+        })
+        .collect();
+
     // bundle every workspace forget into a single transaction, so that e.g.
     // undo correctly restores all of them at once.
     let mut tx = workspace_command.start_transaction();
@@ -94,5 +107,62 @@ pub async fn cmd_workspace_forget(
     };
 
     tx.finish(ui, description).await?;
+
+    if workspace_command.working_copy_shared_with_git() {
+        let git_executable: PathBuf = workspace_command.settings().get("git.executable-path")?;
+        for path in &workspace_paths {
+            remove_git_worktree(
+                ui,
+                &git_executable,
+                workspace_command.workspace_root(),
+                path,
+            )?;
+        }
+    }
+
+    Ok(())
+}
+
+fn remove_git_worktree(
+    ui: &Ui,
+    git_executable: &Path,
+    main_workspace_root: &Path,
+    worktree_path: &Path,
+) -> Result<(), CommandError> {
+    let dot_git = worktree_path.join(".git");
+    if !dot_git.is_file() {
+        return Ok(());
+    }
+    // --force is needed because jj manages the working copy independently from
+    // git, so git may consider the worktree dirty with untracked or modified
+    // files.
+    let output = Command::new(git_executable)
+        .args(["worktree", "remove", "--force"])
+        .arg(worktree_path)
+        .current_dir(main_workspace_root)
+        .output();
+    match output {
+        Ok(o) if o.status.success() => {
+            writeln!(
+                ui.status(),
+                "Removed Git worktree at \"{}\".",
+                worktree_path.display()
+            )?;
+        }
+        Ok(o) => {
+            let stderr = String::from_utf8_lossy(&o.stderr);
+            writeln!(
+                ui.warning_default(),
+                "Failed to remove Git worktree at \"{}\": {stderr}",
+                worktree_path.display()
+            )?;
+        }
+        Err(err) => {
+            writeln!(
+                ui.warning_default(),
+                "Failed to run `git worktree remove`: {err}"
+            )?;
+        }
+    }
     Ok(())
 }
