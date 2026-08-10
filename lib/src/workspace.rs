@@ -168,7 +168,11 @@ impl Workspace {
         working_copy: Box<dyn WorkingCopy>,
         repo_loader: RepoLoader,
     ) -> Result<Self, PathError> {
+        // WASI doesn't support path canonicalization.
+        #[cfg(not(target_os = "wasi"))]
         let workspace_root = dunce::canonicalize(workspace_root).context(workspace_root)?;
+        #[cfg(target_os = "wasi")]
+        let workspace_root = file_util::normalize_path(workspace_root);
         Ok(Self::new_no_canonicalize(
             workspace_root,
             repo_path,
@@ -336,7 +340,11 @@ impl Workspace {
             )
             .await?;
             let repo_loader = repo.loader().clone();
+            // WASI doesn't support path canonicalization.
+            #[cfg(not(target_os = "wasi"))]
             let repo_dir = dunce::canonicalize(&repo_dir).context(&repo_dir)?;
+            #[cfg(target_os = "wasi")]
+            let repo_dir = file_util::normalize_path(&repo_dir);
             let workspace = Self::new(workspace_root, repo_dir, working_copy, repo_loader)?;
             repo.loader()
                 .workspace_store()
@@ -380,8 +388,15 @@ impl Workspace {
     ) -> Result<(Self, Arc<ReadonlyRepo>), WorkspaceInitError> {
         let jj_dir = create_jj_dir(workspace_root)?;
 
+        // WASI doesn't support path canonicalization.
+        #[cfg(not(target_os = "wasi"))]
         let repo_dir = dunce::canonicalize(repo_path).context(repo_path)?;
+        #[cfg(target_os = "wasi")]
+        let repo_dir = file_util::normalize_path(repo_path);
+        #[cfg(not(target_os = "wasi"))]
         let jj_dir_abs = dunce::canonicalize(&jj_dir).context(&jj_dir)?;
+        #[cfg(target_os = "wasi")]
+        let jj_dir_abs = file_util::normalize_path(&jj_dir);
         let path_to_store = file_util::relative_path(&jj_dir_abs, &repo_dir);
         let path_to_store = if path_to_store.is_relative() {
             file_util::slash_path(&path_to_store).into_owned()
@@ -584,7 +599,15 @@ impl DefaultWorkspaceLoader {
             let buf = fs::read(&repo_dir).context(&repo_dir)?;
             let repo_path =
                 file_util::path_from_bytes(&buf).map_err(WorkspaceLoadError::DecodeRepoPath)?;
-            repo_dir = dunce::canonicalize(jj_dir.join(repo_path)).context(repo_path)?;
+            // WASI doesn't support path canonicalization.
+            #[cfg(not(target_os = "wasi"))]
+            {
+                repo_dir = dunce::canonicalize(jj_dir.join(repo_path)).context(repo_path)?;
+            }
+            #[cfg(target_os = "wasi")]
+            {
+                repo_dir = file_util::normalize_path(&jj_dir.join(repo_path));
+            }
             if !repo_dir.is_dir() {
                 return Err(WorkspaceLoadError::RepoDoesNotExist(repo_dir));
             }
