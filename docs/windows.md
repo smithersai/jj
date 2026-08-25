@@ -44,16 +44,15 @@ line endings without converting them to CRLF. You'll want to make sure any
 tooling you use, especially IDEs, preserve LF line endings.
 
 [^1]: This poses the question of whether we should support reading the
-      `core.autocrlf` setting in colocated workspaces. See details at the
-      [issue][read-git-config-issue].
-[git-autocrlf]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration#_core_autocrlf
-[read-git-config-issue]: https://github.com/jj-vcs/jj/issues/4048
+    `core.autocrlf` setting in colocated workspaces. See details at the
+    [issue][read-git-config-issue].
+    [git-autocrlf]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration#_core_autocrlf
+    [read-git-config-issue]: https://github.com/jj-vcs/jj/issues/4048
 
 ## Pagination
 
 On Windows, `jj` will use its integrated pager called `streampager` by default,
-unless the config `ui.pager` is explicitly set. See the [pager section of the
-config docs](config.md#pager) for more details.
+unless the config `ui.pager` is explicitly set. See the [pager section of the config docs](config.md#pager) for more details.
 
 If the built-in pager doesn't meet your needs and you have Git installed, you
 can switch to using Git's pager as follows:

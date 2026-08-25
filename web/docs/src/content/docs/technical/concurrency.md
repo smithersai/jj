@@ -5,7 +5,7 @@ title: Concurrency
 ## Introduction
 
 Concurrent editing is a key feature of DVCSs -- that's why they're called
-*Distributed* Version Control Systems. A DVCS that didn't let users edit files
+_Distributed_ Version Control Systems. A DVCS that didn't let users edit files
 and create commits on separate machines at the same time wouldn't be much
 of a distributed VCS.
 
@@ -22,7 +22,7 @@ the same whether they're made locally or remotely.
 
 One problem with using lock files is that they don't work when the clone is in a
 distributed file system. Most clones are of course not stored in distributed
-file systems, but it is a *big* problem when they are (Mercurial repos
+file systems, but it is a _big_ problem when they are (Mercurial repos
 frequently get corrupted, for example).
 
 Another problem with using lock files is related to complexity of
@@ -56,8 +56,7 @@ entirely lock-free](https://github.com/jj-vcs/jj/issues/2193). If you know
 about the bug, it is relatively easy to recover from.
 
 Moreover, such use of Jujutsu is not currently thoroughly tested,
-especially in the context of [colocated
-repositories](../glossary.md#colocated-workspaces). While the contents of commits
+especially in the context of [colocated repositories](../glossary.md#colocated-workspaces). While the contents of commits
 should be safe, concurrent modification of a repository from different computers
 might conceivably lose some bookmark pointers. Note that, unlike in pure
 Git, losing a bookmark pointer does not lead to losing commits.

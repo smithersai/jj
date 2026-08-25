@@ -34,7 +34,7 @@ experienced, working on brand new projects alone, or large scale software
 projects with large histories and teams.
 
 Jujutsu is unlike most other systems, because internally it abstracts the user
-interface and version control algorithms from the *storage systems* used to
+interface and version control algorithms from the _storage systems_ used to
 serve your content. This allows it to serve as a VCS with many possible physical
 backends, that may have their own data or networking models—like [Mercurial] or
 [Breezy], or hybrid systems like Google's cloud-based design, [Piper/CitC].
@@ -87,7 +87,7 @@ And it adds several innovative, useful features of its own:
 
 - **Operation log & undo**: Jujutsu records every operation that is performed on the
   repository, from commits, to pulls, to pushes. This makes debugging problems like
-  "what just happened?" or "how did I end up here?" easier, *especially* when
+  "what just happened?" or "how did I end up here?" easier, _especially_ when
   you're helping your coworker answer those questions about their repository!
   And because everything is recorded, you can undo that mistake you just made
   with ease. Version control has finally entered [the 1960s][undo-history]!
@@ -109,14 +109,14 @@ And it adds several innovative, useful features of its own:
 
   The fundamental problem with using filesystems like Dropbox and backup tools
   like `rsync` on your typical Git/Mercurial repositories is that they rely
-  on *local filesystem operations* being atomic, serialized, and non-concurrent
+  on _local filesystem operations_ being atomic, serialized, and non-concurrent
   with respect to other reads and writes—which is _not_ true when operating on
   distributed file systems, or when operations like concurrent file copies (for
   backup) happen while lock files are being held.
 
   Jujutsu is instead designed to be [safe under concurrent scenarios][conc-safety];
   simply using rsync or Dropbox and then using that resulting repository
-  should never result in a repository in a *corrupt state*. The worst that
+  should never result in a repository in a _corrupt state_. The worst that
   _should_ happen is that it will expose conflicts between the local and remote
   state, leaving you to resolve them.
 
@@ -132,13 +132,12 @@ Jujutsu is relatively young, with lots of work to still be done. If you have any
 questions, or want to talk about future plans, please join us on Discord
 [![Discord](https://img.shields.io/discord/968932220549103686.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/dkmfj3aGQN),
 start a [GitHub Discussion](https://github.com/jj-vcs/jj/discussions), or
-send an IRC message to [`#jujutsu` on Libera
-Chat](https://web.libera.chat/?channel=#jujutsu). The developers monitor all of
+send an IRC message to [`#jujutsu` on Libera Chat](https://web.libera.chat/?channel=#jujutsu). The developers monitor all of
 these channels[^bridge].
 
 [^bridge]: To be more precise, the `#jujutsu` Libera IRC channel is bridged to
-one of the channels on jj's Discord. Some of the developers stay on Discord and
-use the bridge to follow IRC.
+    one of the channels on jj's Discord. Some of the developers stay on Discord and
+    use the bridge to follow IRC.
 
 ### News and Updates 📣
 
@@ -186,13 +185,10 @@ The wiki also contains a more extensive list of [media references][wiki-media].
 > still be work-in-progress features, suboptimal UX, and workflow gaps that make
 > it unusable for your particular use.
 
-Follow the [installation
-instructions](https://docs.jj-vcs.dev/latest/install-and-setup) to
+Follow the [installation instructions](https://docs.jj-vcs.dev/latest/install-and-setup) to
 obtain and configure `jj`.
 
-The best way to get started is probably to go through [the
-tutorial](https://docs.jj-vcs.dev/latest/tutorial). Also see the [Git
-comparison](https://docs.jj-vcs.dev/latest/git-comparison), which
+The best way to get started is probably to go through [the tutorial](https://docs.jj-vcs.dev/latest/tutorial). Also see the [Git comparison](https://docs.jj-vcs.dev/latest/git-comparison), which
 includes a table of `jj` vs. `git` commands.
 
 As you become more familiar with Jujutsu, the following resources may be helpful:
@@ -204,8 +200,7 @@ As you become more familiar with Jujutsu, the following resources may be helpful
   to see what keywords are available.
 
 If you are using a **prerelease** version of `jj`, you would want to consult
-[the docs for the prerelease (main branch)
-version](https://docs.jj-vcs.dev/prerelease/). You can also get there
+[the docs for the prerelease (main branch) version](https://docs.jj-vcs.dev/prerelease/). You can also get there
 from the docs for the latest release by using the website's version switcher. The version switcher is visible in
 the header of the website when you scroll to the top of any page.
 
@@ -228,8 +223,7 @@ Here is how you can explore a GitHub repository with `jj`.
 
 <img src="demos/git_compat.png" />
 
-You can even have a [colocated local
-workspace](https://docs.jj-vcs.dev/latest/git-compatibility#colocated-jujutsugit-repos)
+You can even have a [colocated local workspace](https://docs.jj-vcs.dev/latest/git-compatibility#colocated-jujutsugit-repos)
 where you can use both `jj` and `git` commands interchangeably.
 
 ### The working copy is automatically committed
@@ -314,7 +308,7 @@ have almost exclusively used `jj` to develop the project itself since early
 January 2021. I haven't had to re-clone from source (I don't think I've even had
 to restore from backup).
 
-There *will* be changes to workflows and backward-incompatible changes to the
+There _will_ be changes to workflows and backward-incompatible changes to the
 on-disk formats before version 1.0.0. For any format changes, we'll try to
 implement transparent upgrades (as we've done with recent changes), or provide
 upgrade commands or scripts if requested.
@@ -330,8 +324,7 @@ We welcome outside contributions, and there's plenty of things to do, so
 don't be shy. Please ask if you want a pointer on something you can help with,
 and hopefully we can all figure something out.
 
-We do have [a few policies and
-suggestions](https://docs.jj-vcs.dev/prerelease/contributing/)
+We do have [a few policies and suggestions](https://docs.jj-vcs.dev/prerelease/contributing/)
 for contributors. The broad TL;DR:
 
 - Bug reports are very welcome!

@@ -9,12 +9,12 @@ This document explains the difference between each option.
 
 These flags are used to specify the sources of the operation:
 
-| Long flag                       | Short flag | Description                                                                     |
-| ------------------------------- | ---------- | ------------------------------------------------------------------------------- |
-| `--revision` (or `--revisions`) | `-r`       | The default, especially for commands that don't need to specify a destination.  |
-| `--source`                      | `-s`       | The specified revision and all its descendants.                                 |
-| `--from`                        | `-f`       | The _contents_ of a revision, or the bookmarks on a revision.                   |
-| `--branch`                      | `-b`       | A whole branch, relative to the destination.                                    |
+| Long flag                       | Short flag | Description                                                                    |
+| ------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `--revision` (or `--revisions`) | `-r`       | The default, especially for commands that don't need to specify a destination. |
+| `--source`                      | `-s`       | The specified revision and all its descendants.                                |
+| `--from`                        | `-f`       | The _contents_ of a revision, or the bookmarks on a revision.                  |
+| `--branch`                      | `-b`       | A whole branch, relative to the destination.                                   |
 
 These flags are used when commands need both a "source" revision and a
 "destination" revision:

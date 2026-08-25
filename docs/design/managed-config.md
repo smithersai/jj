@@ -16,11 +16,11 @@ your config is a security risk.
 There is a need for a repository to impose requirements upon users. Examples of
 these things include, but are not limited to:
 
-*   Formatter configuration (eg. [Chromium Formatter Config])
-*   Pre-upload checks (eg. [Chromium Pre-upload Checks])
-*   Syncing scripts (eg. [Chromium Syncing Scripts])
-*   Custom aliases / revsets documented by some kind of “getting started with
-    &lt;project&gt;” document
+- Formatter configuration (eg. [Chromium Formatter Config])
+- Pre-upload checks (eg. [Chromium Pre-upload Checks])
+- Syncing scripts (eg. [Chromium Syncing Scripts])
+- Custom aliases / revsets documented by some kind of “getting started with
+  &lt;project&gt;” document
 
 It should be fairly obvious that there is a strong benefit to doing so. However,
 controlling a user’s config is sufficient to get root access to their machine,
@@ -31,19 +31,19 @@ This is currently achieved by projects such as chromium by instructing the user
 to symlink `.jj/repo/config.toml` to a file in the repository. This has several
 drawbacks:
 
-*   It doesn’t work out-of-the-box. I need to manually symlink it
-*   It has no security guarantees. If I update the file in the repo, the user has no
-    opportunity to review it.
-*   This prevents a user from having their own repo configuration on top of it.
+- It doesn’t work out-of-the-box. I need to manually symlink it
+- It has no security guarantees. If I update the file in the repo, the user has no
+  opportunity to review it.
+- This prevents a user from having their own repo configuration on top of it.
 
 ## Objective
 
-*   Create a new layer of configuration between user configuration and repo
-    configuration.
-  *   This configuration will be stored in version control and henceforth be
-      referred to as “managed” configuration.
-*   Implement it in a secure manner so that an attacker cannot take control over
-    the managed config.
+- Create a new layer of configuration between user configuration and repo
+  configuration.
+- This configuration will be stored in version control and henceforth be
+  referred to as “managed” configuration.
+- Implement it in a secure manner so that an attacker cannot take control over
+  the managed config.
 
 ## Detailed Design
 
@@ -61,6 +61,7 @@ problem".
 #### Trust levels
 
 We will add the following fields to metadata:
+
 ```
 enum TrustLevel {
     // There's no "optional" in protos. It just returns the zero value.
@@ -112,9 +113,9 @@ does not have a managed config, we skip everything here.
 If a repository has a managed config and unset trust, we first use
 `ui.can_prompt()` to determine whether we are in a TUI.
 
-*   If we are in a TUI, we ask the user what trust level they would like.
-*   If we are not in a TUI, we warn them that we are ignoring the repo config (we
-    return `IGNORE`), and that they can run `jj config managed --ignore/notify/trust` in a terminal to configure this.
+- If we are in a TUI, we ask the user what trust level they would like.
+- If we are not in a TUI, we warn them that we are ignoring the repo config (we
+  return `IGNORE`), and that they can run `jj config managed --ignore/notify/trust` in a terminal to configure this.
 
 ##### Ignored
 
@@ -154,17 +155,18 @@ is unclear (and much harder to implement than the other options).
 
 The biggest problem with this is that there is not a clear "correct" set of
 semantics. If a config is not approved / rejected, we have 3 options:
-* Fail the command. This seems like a bad idea since users have an assumption
+
+- Fail the command. This seems like a bad idea since users have an assumption
   that most jj commands will not fail.
-* Use no config. This can potentially have quite bad effects on the repo.
-* Use best-effort to use an approved config (probably most recently approved).
-* Force the user to make a selection before running a command
-  * This is impossible in general due to `ui.can_prompt()` returning `false`
-    * We would need to fall back to another option if we can't prompt.
-  * But `ui.can_prompt()` does not mean that we *should* prompt
-    * E.g., a script that runs jj to do a bisection probably doesn't want
+- Use no config. This can potentially have quite bad effects on the repo.
+- Use best-effort to use an approved config (probably most recently approved).
+- Force the user to make a selection before running a command
+  - This is impossible in general due to `ui.can_prompt()` returning `false`
+    - We would need to fall back to another option if we can't prompt.
+  - But `ui.can_prompt()` does not mean that we _should_ prompt
+    - E.g., a script that runs jj to do a bisection probably doesn't want
       you to prompt every time the config changes.
-    * This probably isn't too bad if it only happens once (e.g., setting trust
+    - This probably isn't too bad if it only happens once (e.g., setting trust
       level), but if it happens many times, it could be very annoying.
 
 Consider the following examples
@@ -184,13 +186,14 @@ Consider the following examples
    approved, and thus the next jj command will have the config disabled.
 
 Depending on what has changed, a variety of things could happen:
-* A user in a repo that defines `trunk()` could run
+
+- A user in a repo that defines `trunk()` could run
   `jj rebase -b <revset> -o trunk()`
-  * This would result in it going to the wrong trunk
-* A user in a repo that defines `immutable_heads() = ...` could run something
+  - This would result in it going to the wrong trunk
+- A user in a repo that defines `immutable_heads() = ...` could run something
   like `jj rebase -b mutable() -o trunk()`
-  * This would rebase a bunch of immutable commits
-* A user in a repo that defines `pre-upload` hooks (which don't yet exist,
+  - This would rebase a bunch of immutable commits
+- A user in a repo that defines `pre-upload` hooks (which don't yet exist,
   but are being planned) runs `jj gerrit upload` and bypasses them entirely.
 
 Thanks to the magic of `jj undo`, everything except the upload is recoverable.
@@ -204,14 +207,16 @@ If we use best-effort instead, we are likely to run into a different set of
 issues.
 
 The first is that it's no longer clear which config is being used. If I:
+
 1. Have two workspaces A and B with the same state, both approved.
 2. Sync workspace B and approve the config
 3. Check out an old version of workspace A
 
 Now which config is used?
-* The most recently approved globally?
-* The most recently approved for this workspace?
-* Some algorithm which determines that the config for A was at a closer commit
+
+- The most recently approved globally?
+- The most recently approved for this workspace?
+- Some algorithm which determines that the config for A was at a closer commit
   than B?
 
 The second issue is that things may be incorrect. If `foo.py` was renamed to
@@ -226,23 +231,24 @@ security-conscious, working on a repo they don't trust, and working on a repo
 with managed config.
 
 Due to:
-* Significant implementation complexity
-  * My prototype without this feature is only ~200 lines of code and ~100 lines
+
+- Significant implementation complexity
+  - My prototype without this feature is only ~200 lines of code and ~100 lines
     of tests. This feature would likely double that for the most hacky simple
     implementation, and add significantly more if we wanted a proper nice UX.
-* The lack of a single "correct" solution
-* The fact that most users just want the "trust" option
-* The fact that it is no more difficult to add other options, then add the
+- The lack of a single "correct" solution
+- The fact that most users just want the "trust" option
+- The fact that it is no more difficult to add other options, then add the
   review option after the fact
-* The time that would be required to get consensus on the various decisions
+- The time that would be required to get consensus on the various decisions
   that would need to be made in terms of how this would work.
-  * There was already a lot of
+  - There was already a lot of
     [discussion](https://github.com/jj-vcs/jj/pull/7761#discussion_r2476135221)
     on this topic, but no clear conclusion was reached.
-  * Technical (e.g., disable vs. best-effort)
-  * UX
-    * When reviewing, do we review diffs or full config files?
-    * Do we prompt the user to review before running the command?
+  - Technical (e.g., disable vs. best-effort)
+  - UX
+    - When reviewing, do we review diffs or full config files?
+    - Do we prompt the user to review before running the command?
 
 I propose that the "review" option not be put in the MVP, and and instead be
 added in later.
@@ -264,8 +270,8 @@ jj new stable-branch@origin
 
 There are some edge cases we need to consider:
 
-*   `stable-branch` may have existed before the config was added
-*   `stable-branch` may have a different copy of the managed config
+- `stable-branch` may have existed before the config was added
+- `stable-branch` may have a different copy of the managed config
 
 The naive assumption would be that you want to read the config from `@`, as the
 config will always match the version of the code you're using. However, it turns
@@ -274,31 +280,31 @@ from `trunk()`.
 
 Consider several different use cases:
 
-*   My formatter was previously `clang-format --foo`, but the option `--foo` was
-    deprecated in the latest version of `clang-format`
-  *   Here, you want to read from `trunk()`
-*   My formatter was previously `$repo/formatter --foo`, but the option `--foo`
-    was deprecated in the latest version of `formatter`
-  *   Here, you want to read from `@`
-*   We decide to split long lines and add a new formatter (or pre-upload hook)
-    config `formatter --line-length=80`
-  *   Here, you probably want to read from `@`
-*   We decide to add a pre-upload check that validates that all commit
-    descriptions contain a reference to a bug
-  *   This should be applied to old branches as well, so you want `trunk()`
-*   We add a new helpful alias / revset
-  *   This should be applied to old branches as well, so you want `trunk()`
-*   We move our formatter
-  *   If it’s external, you want to read from `trunk()`
-  *   If it’s internal, you want to read from `@`
+- My formatter was previously `clang-format --foo`, but the option `--foo` was
+  deprecated in the latest version of `clang-format`
+- Here, you want to read from `trunk()`
+- My formatter was previously `$repo/formatter --foo`, but the option `--foo`
+  was deprecated in the latest version of `formatter`
+- Here, you want to read from `@`
+- We decide to split long lines and add a new formatter (or pre-upload hook)
+  config `formatter --line-length=80`
+- Here, you probably want to read from `@`
+- We decide to add a pre-upload check that validates that all commit
+  descriptions contain a reference to a bug
+- This should be applied to old branches as well, so you want `trunk()`
+- We add a new helpful alias / revset
+- This should be applied to old branches as well, so you want `trunk()`
+- We move our formatter
+- If it’s external, you want to read from `trunk()`
+- If it’s internal, you want to read from `@`
 
 All in all, you can see a general pattern.
 
-*   If something refers to an in-repo tool, you **probably** want the config to
-    be read from `@`
-*   Otherwise, you **probably** want to read from `trunk()`
-*   I say probably, because the split long lines example doesn’t conform to this
-    rule.
+- If something refers to an in-repo tool, you **probably** want the config to
+  be read from `@`
+- Otherwise, you **probably** want to read from `trunk()`
+- I say probably, because the split long lines example doesn’t conform to this
+  rule.
 
 #### Problematic examples
 
@@ -321,6 +327,7 @@ command = ["rustfmt"]
 ```
 
 `.rustfmt.toml`:
+
 ```
 reorder_imports = true
 ```
@@ -339,6 +346,7 @@ command = ["rustfmt.py"]
 ```
 
 `rustfmt.py`:
+
 ```
 os.execv(["rustfmt", "--reorder-imports"])
 ```
@@ -375,6 +383,7 @@ config option.
 Alternatively, a more general approach could be to create some kind of include
 directive in `config.toml` files, like so (this has already been discussed and
 rejected before, so it may not be viable).
+
 ```
 includes = [
     {
@@ -387,14 +396,15 @@ includes = [
 #### Read from filesystem or from repo objects?
 
 The tradeoffs are:
-* If we read it from the filesystem, then it will not be read if the path is
+
+- If we read it from the filesystem, then it will not be read if the path is
   not tracked, e.g. because you have done `jj sparse --clear --add lib` or
   because the file matches .gitignore and is not yet tracked.
-  * This could be mitigated by always including `.config/jj` in `jj sparse`
-* If we read it from the repo objects, then changes will not apply to the next
+  - This could be mitigated by always including `.config/jj` in `jj sparse`
+- If we read it from the repo objects, then changes will not apply to the next
   command unless we load this config after snapshotting
-* Reading from the filesystem is faster
-* mtime is only available when reading from the filesystem
+- Reading from the filesystem is faster
+- mtime is only available when reading from the filesystem
 
 Reading from the filesystem seems strictly superior, given the mitigation
 strategy available, so we will go ahead with that for now. If we ever decide to

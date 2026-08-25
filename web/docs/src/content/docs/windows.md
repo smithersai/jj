@@ -56,12 +56,13 @@ converting them to CRLF. You'll want to make sure any tooling you use,
 especially IDEs, preserve LF line endings.
 
 [^1]: This poses the question if we should support reading the `core.autocrlf`
-      setting in colocated workspaces. See details at the
-      [issue][read-git-config-issue].
+    setting in colocated workspaces. See details at the
+    [issue][read-git-config-issue].
+
 [^2]: To detect if a file is binary, Jujutsu currently checks if there is 0 byte
-      in the file which is different from the algorithm of
-      [`gitoxide`][gitoxide-is-binary] or [`git`][git-is-binary]. Jujutsu
-      doesn't plan to align the binary detection logic with git.
+    in the file which is different from the algorithm of
+    [`gitoxide`][gitoxide-is-binary] or [`git`][git-is-binary]. Jujutsu
+    doesn't plan to align the binary detection logic with git.
 
 [git-autocrlf]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration#_core_autocrlf
 [read-git-config-issue]: https://github.com/jj-vcs/jj/issues/4048
@@ -71,8 +72,7 @@ especially IDEs, preserve LF line endings.
 ## Pagination
 
 On Windows, `jj` will use its integrated pager called `streampager` by default,
-unless the config `ui.pager` is explicitly set. See the [pager section of the
-config docs](config.md#pager) for more details.
+unless the config `ui.pager` is explicitly set. See the [pager section of the config docs](config.md#pager) for more details.
 
 If the built-in pager doesn't meet your needs and you have Git installed, you
 can switch to using Git's pager as follows:

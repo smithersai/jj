@@ -12,14 +12,14 @@ These are the config settings available to jj/Jujutsu.
   `cli/src/config/` directory in `jj`'s source repo.
 
 - The user settings. These can be edited with `jj config edit --user`. User
-settings are located in [the user config files], which can be found with `jj
+  settings are located in [the user config files], which can be found with `jj
 config path --user`.
 
 - The repo settings. These can be edited with `jj config edit --repo` and are
-located in `.jj/repo/config.toml`.
+  located in `.jj/repo/config.toml`.
 
 - The workspace settings. These can be edited with `jj config edit --workspace`
-and are located in `.jj/workspace-config.toml` in the workspace root.
+  and are located in `.jj/workspace-config.toml` in the workspace root.
 
 - Settings [specified in the command-line](#specifying-config-on-the-command-line).
 
@@ -43,6 +43,7 @@ The first thing to remember is that the value of a setting (the part to the
 right of the `=` sign) should be surrounded in quotes if it's a string.
 
 ### Dotted style and headings
+
 In TOML, anything under a heading can be dotted instead. For example,
 `user.name = "YOUR NAME"` is equivalent to:
 
@@ -110,15 +111,15 @@ commit_id = "green"
 
 The following colors are available:
 
-* black
-* red
-* green
-* yellow
-* blue
-* magenta
-* cyan
-* white
-* default
+- black
+- red
+- green
+- yellow
+- blue
+- magenta
+- cyan
+- white
+- default
 
 All of them but "default" come in a bright version too, e.g. "bright red". The
 "default" color can be used to override a color defined by a parent style
@@ -265,9 +266,10 @@ format_signed_off_by_trailer(self)
 ```
 
 Some ready-to-use trailer templates are available for frequently used trailers:
-* `format_signed_off_by_trailer(commit)` creates a "Signed-off-by" trailer
+
+- `format_signed_off_by_trailer(commit)` creates a "Signed-off-by" trailer
   using the committer info.
-* `format_gerrit_change_id_trailer(commit)` creates a "Change-Id" trailer
+- `format_gerrit_change_id_trailer(commit)` creates a "Change-Id" trailer
   suitable to be used with Gerrit. It is based Jujutsu's change id.
 
 Existing trailers are also accessible via `commit.trailers()`.
@@ -315,28 +317,28 @@ it's difficult to read a diff line with many removed/added words, there's a
 threshold to switch to traditional separate-line format. You can also change
 the default number of lines of context shown.
 
-* `max-inline-alternation`: Maximum number of removed/added word alternation to
+- `max-inline-alternation`: Maximum number of removed/added word alternation to
   inline. For example, `<added> ... <added>` sequence has 1 alternation, so the
   line will be inline if `max-inline-alternation >= 1`. `<added> ... <removed>
   ... <added>` sequence has 3 alternation.
 
-  * `0`: disable inlining, making `--color-words` more similar to `--git`
-  * `1`: inline removes-only or adds-only lines
-  * `2`, `3`, ..: inline up to `2`, `3`, .. alternation
-  * `-1`: inline all lines
+  - `0`: disable inlining, making `--color-words` more similar to `--git`
+  - `1`: inline removes-only or adds-only lines
+  - `2`, `3`, ..: inline up to `2`, `3`, .. alternation
+  - `-1`: inline all lines
 
   The default is `3`.
 
   **This parameter is experimental.** The definition is subject to change.
 
-* `conflict`: How conflicts are processed and displayed.
+- `conflict`: How conflicts are processed and displayed.
 
-   * `"materialize"`: compare materialized contents (default)
-   * `"pair"`: compare individual pairs
+  - `"materialize"`: compare materialized contents (default)
+  - `"pair"`: compare individual pairs
 
-   **This parameter is experimental.**
+  **This parameter is experimental.**
 
-* `context`: Number of lines of context to show in the diff. The default is `3`.
+- `context`: Number of lines of context to show in the diff. The default is `3`.
 
 ```toml
 [diff.color-words]
@@ -348,7 +350,7 @@ context = 3
 
 In git diffs you can change the default number of lines of context shown.
 
-* `context`: Number of lines of context to show in the diff. The default is `3`.
+- `context`: Number of lines of context to show in the diff. The default is `3`.
 
 ```toml
 [diff.git]
@@ -390,7 +392,7 @@ diff-args = ["--color=always", "$left", "$right"]
   not work for viewing diffs.
 
 By default `jj` will invoke external tools with a directory containing the left
-and right sides.  The `diff-invocation-mode` config can change this to file by file
+and right sides. The `diff-invocation-mode` config can change this to file by file
 invocations as follows:
 
 ```toml
@@ -425,8 +427,7 @@ conflict-marker-style = "snapshot"
 conflict-marker-style = "git"
 ```
 
-For more details about these conflict marker styles, see the [conflicts
-page](conflicts.md#conflict-markers).
+For more details about these conflict marker styles, see the [conflicts page](conflicts.md#conflict-markers).
 
 ### Set of immutable commits
 
@@ -773,7 +774,7 @@ The built-in pager does not support mouse input.
 
 #### Wrapping config
 
-Wrapping performed by the pager happens *in addition to* any
+Wrapping performed by the pager happens _in addition to_ any
 wrapping that `jj` itself does.
 
 ```toml
@@ -925,7 +926,7 @@ Obviously, you would only set one line, don't copy them all in!
 ## Editing diffs
 
 The `ui.diff-editor` setting affects the default tool used for editing diffs
-(e.g.  `jj split`, `jj squash -i`). If it is not set, the special value
+(e.g. `jj split`, `jj squash -i`). If it is not set, the special value
 `:builtin` is used. It launches a built-in TUI tool (known as [scm-diff-editor])
 to edit the diff in your terminal.
 
@@ -933,8 +934,7 @@ to edit the diff in your terminal.
 
 You can try a different tool temporarily by doing e.g. `jj split --tool meld` or
 you can set the option to change the default. This requires that you have an
-appropriate tool installed, see for example [the instructions for using
-Meld](#using-meld-as-a-diff-editor).
+appropriate tool installed, see for example [the instructions for using Meld](#using-meld-as-a-diff-editor).
 
 **Suggestion:** If possible, it is recommended to try an external diff tool like
 [Meld](#using-meld-as-a-diff-editor) (see below for some other possibilities)
@@ -1066,8 +1066,7 @@ obtained as follows:
 
 - **Mac OS:** Install Homebrew and run `brew install --cask meld`.
   This will install both an app in `/Applications/Meld.app` and the command-line
-  `meld` command that `jj` uses. You can read about [more details and other
-  options](https://gist.github.com/ilyagr/1b40f6061d8ad320cee4c12843df1a23) but,
+  `meld` command that `jj` uses. You can read about [more details and other options](https://gist.github.com/ilyagr/1b40f6061d8ad320cee4c12843df1a23) but,
   as of this writing, this is by far the easiest.
 
 `jj` has two diff editing configurations that use Meld: `meld` for a 2-pane view
@@ -1084,7 +1083,6 @@ experience, you can follow [instructions from the Wiki] to configure the
 [DirDiff Vim plugin] and/or the [vimtabdiff Python script].
 
 [instructions from the Wiki]: https://github.com/jj-vcs/jj/wiki/Vim,-Neovim#using-vim-as-a-diff-tool
-
 [DirDiff Vim plugin]: https://github.com/will133/vim-dirdiff
 [vimtabdiff Python script]: https://github.com/balki/vimtabdiff
 
@@ -1102,6 +1100,7 @@ merge-editor = ["meld", "$left", "$base", "$right", "-o", "$output"]
 ```
 
 The following tools can be used out of the box, as long as they are installed:
+
 - "kdiff3"
 - "meld"
 - "mergiraf"
@@ -1110,8 +1109,7 @@ The following tools can be used out of the box, as long as they are installed:
 - "vscode"
 - "vscodium"
 
-Using VS Code as a merge tool works well with VS Code's [Remote
-Development](https://code.visualstudio.com/docs/remote/remote-overview)
+Using VS Code as a merge tool works well with VS Code's [Remote Development](https://code.visualstudio.com/docs/remote/remote-overview)
 functionality, as long as `jj` is called from VS Code's terminal.
 
 ### Setting up a custom merge tool
@@ -1212,23 +1210,24 @@ The file is only rewritten if the subprocess produces a successful exit code.
 
 Tools are defined in a table where the keys are arbitrary identifiers and
 the values have the following properties:
- - `command`: The arguments used to run the tool. The first argument is the
-   path to an executable file. Arguments can contain these variables that will
-   be replaced:
-   - `$root` will be replaced with the workspace root path (the directory
-     containing the .jj directory).
-   - `$path` will be replaced with the repo-relative path of the file being
-     fixed. It is useful to provide the path to tools that include the path
-     in error messages, or behave differently based on the directory or file
-     name.
- - `patterns`: List of filesets (see: `jj help -k filesets`), determining
-   which files the tool will affect based on their path. If this list is
-   empty, no files will be affected by the tool. If there are multiple
-   patterns, the tool is applied only once to each file in the union of the
-   patterns.
- - `enabled`: Enables or disables the tool. If omitted, the tool is enabled.
-   This is useful for defining disabled tools in user configuration that can
-   be enabled in individual repositories with one config setting.
+
+- `command`: The arguments used to run the tool. The first argument is the
+  path to an executable file. Arguments can contain these variables that will
+  be replaced:
+  - `$root` will be replaced with the workspace root path (the directory
+    containing the .jj directory).
+  - `$path` will be replaced with the repo-relative path of the file being
+    fixed. It is useful to provide the path to tools that include the path
+    in error messages, or behave differently based on the directory or file
+    name.
+- `patterns`: List of filesets (see: `jj help -k filesets`), determining
+  which files the tool will affect based on their path. If this list is
+  empty, no files will be affected by the tool. If there are multiple
+  patterns, the tool is applied only once to each file in the union of the
+  patterns.
+- `enabled`: Enables or disables the tool. If omitted, the tool is enabled.
+  This is useful for defining disabled tools in user configuration that can
+  be enabled in individual repositories with one config setting.
 
 `jj fix` provides the file content anonymously on standard input, but the name
 of the file being formatted may be important for include sorting or other output
@@ -1477,8 +1476,7 @@ by setting `ui.show-cryptographic-signatures` to true in your configuration.
 
 If you want to display commit signatures in your templates, you can use
 `commit.signature()` (see [Commit type](./templates.md#commit-type)). The
-returned [CryptographicSignature
-Type](./templates.md#cryptographicsignature-type) provides methods to retrieve
+returned [CryptographicSignature Type](./templates.md#cryptographicsignature-type) provides methods to retrieve
 signature details.
 
 ## Git settings
@@ -1504,8 +1502,7 @@ push`; however if multiple remotes exist, the default remote is assumed to be
 named `"origin"`, just like in Git. Sometimes this is undesirable, e.g. when you
 want to fetch from a different remote than you push to, such as a GitHub fork.
 
-To change this behavior, you can modify the [repository
-configuration](#config-files-and-toml) variable `git.fetch`, which can be a
+To change this behavior, you can modify the [repository configuration](#config-files-and-toml) variable `git.fetch`, which can be a
 single remote, or a list of remotes to fetch from multiple places:
 
 ```sh
@@ -1683,8 +1680,8 @@ executable-path = "/path/to/git"
 hunks and merge them. This can be configured to split hunks further into
 word-level hunks.
 
-* `line`: split into line hunks (default)
-* `word`: split into word hunks
+- `line`: split into line hunks (default)
+- `word`: split into word hunks
 
 ```toml
 [merge]
@@ -1699,8 +1696,8 @@ Darcs does. It also means that repeated 3-way merging of multiple trees may give
 different results depending on the order of merging. To turn it off, set
 `same-change = "keep"`.
 
-* `keep`: leave same-change conflict unresolved
-* `accept`: resolve same-change conflict to new value (default)
+- `keep`: leave same-change conflict unresolved
+- `accept`: resolve same-change conflict to new value (default)
 
 ```toml
 [merge]
@@ -1719,8 +1716,7 @@ are `"none"` or `"watchman"`.
 ### Watchman
 
 To configure the Watchman filesystem monitor, set
-`fsmonitor.backend = "watchman"`. Ensure that you have [installed the Watchman
-executable on your system](https://facebook.github.io/watchman/docs/install).
+`fsmonitor.backend = "watchman"`. Ensure that you have [installed the Watchman executable on your system](https://facebook.github.io/watchman/docs/install).
 
 You can configure `jj` to use watchman triggers to automatically create
 snapshots on filesystem changes by setting
@@ -1789,8 +1785,7 @@ auto-update-stale = true
 This is particularly useful if you have [multiple workspaces](working-copy.md#workspaces)
 and want to avoid manually updating each one.
 
-For more information on stale working copies, see the [working copy
-documentation](working-copy.md#stale-working-copy).
+For more information on stale working copies, see the [working copy documentation](working-copy.md#stale-working-copy).
 
 ## Working copy settings
 
@@ -1820,10 +1815,11 @@ eol-conversion = "input-output"
 [git-autocrlf]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration#_core_autocrlf
 [gitoxide-is-binary]: https://github.com/GitoxideLabs/gitoxide/blob/073487b38ed40bcd7eb45dc110ae1ce84f9275a9/gix-filter/src/eol/utils.rs#L98-L100
 [git-is-binary]: https://github.com/git/git/blob/f1ca98f609f9a730b9accf24e5558a10a0b41b6c/convert.c#L94-L103
+
 [^1]: To detect if a file is binary, Jujutsu currently checks if there is NULL
-      byte in the file which is different from the algorithm of
-      [`gitoxide`][gitoxide-is-binary] or [`git`][git-is-binary]. Jujutsu
-      doesn't plan to align the binary detection logic with git.
+    byte in the file which is different from the algorithm of
+    [`gitoxide`][gitoxide-is-binary] or [`git`][git-is-binary]. Jujutsu
+    doesn't plan to align the binary detection logic with git.
 
 ### Respect or ignore executable bit permission changes
 
@@ -1862,7 +1858,7 @@ file manually. If this option is `"respect"`, `jj` will also attempt to
 propagate that change to the filesystem.
 
 Note that if you modify a file's executable bit before changing this setting
-from `"ignore"` or  `"auto"` to `"respect"`, `jj` may not update the stored
+from `"ignore"` or `"auto"` to `"respect"`, `jj` may not update the stored
 executable bit until you modify the file's contents or update its modification
 time, e.g. with `touch`.
 
@@ -1892,10 +1888,10 @@ The files in the `conf.d` directory are loaded in lexicographic order. This allo
 configs to be split across multiple files and combines well
 with [Conditional Variables](#conditional-variables).
 
-| Platform        | Location of `<PLATFORM_SPECIFIC>` dir | Example config file location                              |
-| :-------------- | :------------------------------------ | :-------------------------------------------------------- |
-| Linux and macOS | `$XDG_CONFIG_HOME` or `$HOME/.config` | `/home/alice/.config/jj/config.toml`                      |
-| Windows         | `{FOLDERID_RoamingAppData}`           | `C:\Users\Alice\AppData\Roaming\jj\config.toml`           |
+| Platform        | Location of `<PLATFORM_SPECIFIC>` dir | Example config file location                    |
+| :-------------- | :------------------------------------ | :---------------------------------------------- |
+| Linux and macOS | `$XDG_CONFIG_HOME` or `$HOME/.config` | `/home/alice/.config/jj/config.toml`            |
+| Windows         | `{FOLDERID_RoamingAppData}`           | `C:\Users\Alice\AppData\Roaming\jj\config.toml` |
 
 The location of the `jj` user config files/directories can also be overridden with the
 `JJ_CONFIG` environment variable. If it is not empty, it will be used instead
@@ -2054,7 +2050,7 @@ wip = ["log", "-r", "work"]
 
 #### Available condition keys
 
-* `--when.repositories`: List of paths to match the repository path prefix.
+- `--when.repositories`: List of paths to match the repository path prefix.
 
   Paths should be absolute. Each path component (directory or file name, drive
   letter, etc.) is compared case-sensitively on all platforms. A path starting
@@ -2065,13 +2061,13 @@ wip = ["log", "-r", "work"]
   is in the main workspace if you're using multiple workspaces with `jj
   workspace`.
 
-* `--when.workspaces`: List of paths to match the workspace path prefix.
+- `--when.workspaces`: List of paths to match the workspace path prefix.
 
   The same concerns about the path as for `--when.repositories` applies.
 
   Use `jj root` to see the workspace root directory.
 
-* `--when.hostnames`: List of hostnames to match against the `operation.hostname`
+- `--when.hostnames`: List of hostnames to match against the `operation.hostname`
   config setting.
 
   Hostnames are compared case-sensitively and must match exactly.
@@ -2081,7 +2077,7 @@ wip = ["log", "-r", "work"]
   --when.hostnames = ["home-desktop", "laptop"]    # matches "home-desktop" OR "laptop"
   ```
 
-* `--when.commands`: List of subcommands to match.
+- `--when.commands`: List of subcommands to match.
 
   Subcommands are space-separated and matched by prefix.
 
@@ -2091,7 +2087,7 @@ wip = ["log", "-r", "work"]
   --when.commands = ["file", "log"] # matches `jj file` *OR* `jj log` (or subcommand of either)
   ```
 
-* `--when.platforms`: List of platforms to match.
+- `--when.platforms`: List of platforms to match.
 
   The values are defined by both
   [`std::env::consts::FAMILY`](https://doc.rust-lang.org/std/env/consts/constant.FAMILY.html)
@@ -2104,7 +2100,7 @@ wip = ["log", "-r", "work"]
   --when.platforms = ["unix"]               # matches anything in the Unix family (Linux, FreeBSD, macOS, etc.)
   ```
 
-* `--when.environments`: List of environment variable conditions, any of
+- `--when.environments`: List of environment variable conditions, any of
   which must match.
 
   Each entry is either `"NAME=VALUE"` (matches if the variable is set to

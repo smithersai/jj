@@ -18,7 +18,7 @@ to usable in a server, it also cannot read configuration from the user's home
 directory, or from user-specific environment variables.
 
 [^1]: There are a few exceptions, such as for messages printed during automatic
-upgrades of the repo format
+    upgrades of the repo format
 
 A lot of thought has gone into making the library crate's API easy to use, but
 not much has gone into "details" such as which collection types are used, or
@@ -152,7 +152,7 @@ has and at which operation it was most recently updated.
 ### Workspace
 
 The `Workspace` type represents the combination of a repo and a working copy
-(like Git's *worktree* concept).
+(like Git's _worktree_ concept).
 
 The repo view at the current operation determines the desired working-copy
 commit in each workspace. The `WorkingCopy` determines what is actually in the

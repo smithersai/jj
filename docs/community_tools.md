@@ -4,8 +4,8 @@ Many of these tools are not complete yet, just like Jujutsu itself. But they
 already simplify many workflows and can improve your experience.
 
 !!! warning
-    The listed tools are community‑maintained; the Jujutsu project does not
-    review, endorse, or guarantee their quality or security.
+The listed tools are community‑maintained; the Jujutsu project does not
+review, endorse, or guarantee their quality or security.
 
 ## Diffedit3
 
@@ -125,7 +125,6 @@ Find it [here][LightJJ].
 JJ View is an open-source Visual Studio Code extension that provides a rich, native graphical interface for Jujutsu. It features a Git-style Source Control (SCM) view for easy change management, an interactive visual commit history graph, and built-in commands for common `jj` operations like squashing, abandoning, and absorbing modifications directly from the editor. It also includes native Gerrit integration for streamlined code review workflows.
 
 Find it [here][jj-view].
-
 
 ## Finding other integrations
 

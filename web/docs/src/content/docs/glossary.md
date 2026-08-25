@@ -24,18 +24,16 @@ such as the "operation store backend" for storing
 ## Bookmark
 
 A bookmark is a named pointer to a [commit](#commit). They are similar to Git's
-[branches](#branch) and even more similar to [Mercurial's
-bookmarks](https://wiki.mercurial-scm.org/Bookmarks). See [here](bookmarks.md)
+[branches](#branch) and even more similar to [Mercurial's bookmarks](https://wiki.mercurial-scm.org/Bookmarks). See [here](bookmarks.md)
 for details.
 
-Unlike in Git, there is no concept of a "current bookmark"; bookmarks *do not*
-move when you create a new commit. Bookmarks *do* automatically follow the
+Unlike in Git, there is no concept of a "current bookmark"; bookmarks _do not_
+move when you create a new commit. Bookmarks _do_ automatically follow the
 commit if it gets [rewritten](#rewrite).
 
 ## Branch
 
-In the context of `jj`, the word "branch" usually refers to an [anonymous
-branch](#anonymous-branch) or, less formally, a branch of the commit "tree"
+In the context of `jj`, the word "branch" usually refers to an [anonymous branch](#anonymous-branch) or, less formally, a branch of the commit "tree"
 (which is itself an informal way to refer to the commit graph, parts of which
 might resemble a tree even when it's not mathematically a tree).
 

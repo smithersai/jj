@@ -14,9 +14,9 @@ end state.
 Redesign Sparse Patterns to accommodate more advanced features for native
 and custom implementations. This includes three main goals:
 
-1.  Sparse Patterns should be versioned with the working copy
-1.  Sparse Patterns should support more [flexible matching rules](https://github.com/jj-vcs/jj/issues/1896)
-1.  Sparse Patterns should support [client path remapping](https://github.com/jj-vcs/jj/issues/2288)
+1. Sparse Patterns should be versioned with the working copy
+1. Sparse Patterns should support more [flexible matching rules](https://github.com/jj-vcs/jj/issues/1896)
+1. Sparse Patterns should support [client path remapping](https://github.com/jj-vcs/jj/issues/2288)
 
 ## Current State (as of jj 0.13.0)
 
@@ -294,8 +294,8 @@ missing working copy infos with a default `WorkingCopyPatterns` as needed.
 #### Related Work
 
 [Perforce client maps](https://www.perforce.com/manuals/cmdref/Content/CmdRef/views.html)
- are very similar in concept to the entirety of `WorkingCopyPatterns`, and this
- design aims to achieve similar functionality.
+are very similar in concept to the entirety of `WorkingCopyPatterns`, and this
+design aims to achieve similar functionality.
 
 The [Josh Project](https://github.com/josh-project/josh) implements partial git
 clones in a way similar to how sparse patterns try to work.

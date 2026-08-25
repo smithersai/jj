@@ -19,7 +19,7 @@ tips, but nevertheless divergence is confusing to our users. We can do better
 than that. It should be possible to solve divergence (after the fact) in many
 scenarios with the help of this command. Solving divergence means rewriting the
 commit graph to end up with a single visible commit for the given change id. For
-the purposes of this design doc we call this commit the *"solution"*.
+the purposes of this design doc we call this commit the _"solution"_.
 
 The command should produce informative messages to summarize any changes made,
 and will prompt for user input in some situations. The user may of course not
@@ -33,16 +33,16 @@ like the solution. `jj undo` can be used in that case.
 
 Divergent commits (for the same change-id) can differ:
 
-*   In their commit description (including tags)
-*   In their commit trees
-*   In the parent(s) of the commits (commits *B/0* and *B/1* for change *B* have
-    different parents)
-*   In the commit author
-*   It is also possible divergence involves two commits with different
-    timestamps that are otherwise identical
+- In their commit description (including tags)
+- In their commit trees
+- In the parent(s) of the commits (commits _B/0_ and _B/1_ for change _B_ have
+  different parents)
+- In the commit author
+- It is also possible divergence involves two commits with different
+  timestamps that are otherwise identical
 
 As you read this design doc it is important to not confuse the
-*predecessor / successor* relationship versus the *ancestor / descendant*
+_predecessor / successor_ relationship versus the _ancestor / descendant_
 relationship.
 
 ### Some divergence scenarios
@@ -51,40 +51,40 @@ Divergence can be introduced in many ways. This document does not aim to explain
 any / all of those scenarios accurately, this section is only meant to be rough
 background material. Here are some examples:
 
-*   In one terminal you type `jj describe` to edit a commit description and
-    while the editor is open you take a coffee break, when you come back you
-    open another terminal and do something that rewrites the commit (for example
-    you modify a file and run `jj log`, causing a snapshot). When you save the
-    new description `jj describe` completes and you end up with 2 visible
-    commits with the same change id.
+- In one terminal you type `jj describe` to edit a commit description and
+  while the editor is open you take a coffee break, when you come back you
+  open another terminal and do something that rewrites the commit (for example
+  you modify a file and run `jj log`, causing a snapshot). When you save the
+  new description `jj describe` completes and you end up with 2 visible
+  commits with the same change id.
 
-*   In general any interactive jj command (`jj split -i`, `jj squash -i`, etc.)
-    can lead to divergence in a similar way.
+- In general any interactive jj command (`jj split -i`, `jj squash -i`, etc.)
+  can lead to divergence in a similar way.
 
-*   You can introduce divergence by making some hidden predecessor of your
-    change visible again. There are many ways this could happen.
+- You can introduce divergence by making some hidden predecessor of your
+  change visible again. There are many ways this could happen.
 
-*   Divergence can happen when mutating two workspaces. For example, assume you
-    have workspaces w1 and w2 with working copy commits *A* and *B*
-    respectively, where *B* is a child of *A*. In w2 you run `jj git fetch` and
-    then rebase the whole branch onto main. Go back to w1 (which is now stale),
-    modify some file on disk and take a snapshot (e.g. run `jj log`). This
-    introduces divergence.
+- Divergence can happen when mutating two workspaces. For example, assume you
+  have workspaces w1 and w2 with working copy commits _A_ and _B_
+  respectively, where _B_ is a child of _A_. In w2 you run `jj git fetch` and
+  then rebase the whole branch onto main. Go back to w1 (which is now stale),
+  modify some file on disk and take a snapshot (e.g. run `jj log`). This
+  introduces divergence.
 
-*   When using the Git backend jj propagates change-id. The change-id is stored
-    in the commit header, so after jj git fetch you can end up with a second
-    commit with the same change-id.
+- When using the Git backend jj propagates change-id. The change-id is stored
+  in the commit header, so after jj git fetch you can end up with a second
+  commit with the same change-id.
 
-*   There is a Google-specific jj upload command to upload a commit to Google's
-    review / test / submit system, and there is an associated Google-specific
-    command to "download" a change from that system back to your jj repo. This
-    can introduce divergence very much like in the Git scenario.
+- There is a Google-specific jj upload command to upload a commit to Google's
+  review / test / submit system, and there is an associated Google-specific
+  command to "download" a change from that system back to your jj repo. This
+  can introduce divergence very much like in the Git scenario.
 
-*   At Google, snapshotting operations happen concurrently on different machines
-    (e.g. two terminals, or more commonly, a terminal and an IDE). Often times
-    they end up snapshotting the same content. Google's backend does not hold
-    locks while snapshotting because it's a distributed filesystem, so locking
-    would be slow.
+- At Google, snapshotting operations happen concurrently on different machines
+  (e.g. two terminals, or more commonly, a terminal and an IDE). Often times
+  they end up snapshotting the same content. Google's backend does not hold
+  locks while snapshotting because it's a distributed filesystem, so locking
+  would be slow.
 
 ## Strawman proposal
 
@@ -93,10 +93,10 @@ simple cases and moving on to more complex ones.
 
 ### Examples and expected behavior (with basic evolution graph)
 
-The first few examples assume commits *B/0* and *B/1* are visible commits for
-change *B*. First we assume *B/0* and *B/1* evolve directly from a common
-predecessor commit *P*, which is now hidden (no longer visible). Later we look
-at more complex evolution graphs. Note that *P*'s change id is also *B*.
+The first few examples assume commits _B/0_ and _B/1_ are visible commits for
+change _B_. First we assume _B/0_ and _B/1_ evolve directly from a common
+predecessor commit _P_, which is now hidden (no longer visible). Later we look
+at more complex evolution graphs. Note that _P_'s change id is also _B_.
 
 ```
 Evolution graph for examples 1, 2, 3 and 4.
@@ -112,7 +112,7 @@ P
 
 We will write `A⁻` to denote the parent trees of commit `A`.
 
-#### Example 1: two commits for change *B*, same parent
+#### Example 1: two commits for change _B_, same parent
 
 ```console
 $ jj log
@@ -123,7 +123,7 @@ B/0
 A
 ```
 
-In this simple case it is clear the solution should be a child of *A*:
+In this simple case it is clear the solution should be a child of _A_:
 
 ```console
 $ jj log
@@ -136,8 +136,8 @@ $ jj log
  A
 ```
 
-Let's now consider two cases: when *P*'s parent is *A*, and when *P* has some
-other parent. First, if *P*'s parent is *A* we have:
+Let's now consider two cases: when _P_'s parent is _A_, and when _P_ has some
+other parent. First, if _P_'s parent is _A_ we have:
 
 ```console
 $ jj log
@@ -150,7 +150,7 @@ B/0
 A
 ```
 
-Here *P*, *B/0* and *B/1* are siblings. The command needs to determine the
+Here _P_, _B/0_ and _B/1_ are siblings. The command needs to determine the
 description, parents, tree and author of the solution. It uses a simple data
 structure for this purpose:
 
@@ -164,7 +164,7 @@ struct MergedState {
 ```
 
 Each of the fields of `MergedState` are populated by doing a merge of the
-corresponding fields of *P*, *B/0* and *B/1*. Loosely speaking each merge can be
+corresponding fields of _P_, _B/0_ and _B/1_. Loosely speaking each merge can be
 expressed as `P + (B/0 - P) + (B/1 - P)` for each of the fields. The command
 attempts to resolve the various Merge objects trivially, using `same_change:
 SameChange::Accept` (later on in this design doc we will tweak the merge
@@ -173,20 +173,20 @@ algorithm a bit).
 The description is merged as a String value. If the description does not
 trivially resolve, the user's merge tool will be invoked, with conflict markers.
 If author does not trivially resolve, the user will be presented with the
-options to choose from. Once that's all done we have our solution commit *B*.
-All descendants of *B/0* and *B/1* are rebased onto *B*. The command records the
-operation in the operation log with a new View where *B* is a visible commit
-with *{B/0, B/1}* as predecessors. *B/0* and *B/1* become hidden commits.
+options to choose from. Once that's all done we have our solution commit _B_.
+All descendants of _B/0_ and _B/1_ are rebased onto _B_. The command records the
+operation in the operation log with a new View where _B_ is a visible commit
+with _{B/0, B/1}_ as predecessors. _B/0_ and _B/1_ become hidden commits.
 
-Note that in some cases the solution may be identical to either *B/0* or *B/1*
+Note that in some cases the solution may be identical to either _B/0_ or _B/1_
 (in all regards except the commit timestamp): we choose to create a new commit
-*B* to make the evolution graph and op log more clearly show that jj converge
+_B_ to make the evolution graph and op log more clearly show that jj converge
 was invoked. Alternatively we could keep the matching commit instead of creating
 a new commit (this could result in cycles in the evolog).
 
-#### Example 2: two commits for change *B* with same parent (predecessor has a different parent)
+#### Example 2: two commits for change _B_ with same parent (predecessor has a different parent)
 
-Now lets consider the case where *P* has a different parent:
+Now lets consider the case where _P_ has a different parent:
 
 ```console
 $ jj log
@@ -200,10 +200,10 @@ A
 X
 ```
 
-In this case we first rebase *P* onto *A* (in-memory) to produce `P' = A + (P -
+In this case we first rebase _P_ onto _A_ (in-memory) to produce `P' = A + (P -
 P⁻)`. This essentially reduces the problem to the previous case. We now produce
 the solution as before: `B = P' + (B/0 - P') + (B/1 - P')`. Note that again the
-parent of the solution is *A*.
+parent of the solution is _A_.
 
 #### Example 3: divergent commits with different parents
 
@@ -219,7 +219,7 @@ A
 ```
 
 In this case it is not immediately obvious which commit should be the parent of
-the solution. Let's first consider the case where *P* is a child of *A*.
+the solution. Let's first consider the case where _P_ is a child of _A_.
 
 ```console
 $ jj log
@@ -241,7 +241,7 @@ parents = P⁻ + (B/0⁻ - P⁻) + (B/1⁻ - P⁻)
 ```
 
 In this example the expression evaluates to `{A} + ({A} - {A}) + ({C} - {A}) =
-{C}`. Since this expression resolves trivially to *{C}*, we use that as the
+{C}`. Since this expression resolves trivially to _{C}_, we use that as the
 parents of the solution.
 
 Note that this simple algorithm produces the desired output in example 1 and
@@ -253,11 +253,11 @@ parents = P⁻ + (B/0⁻ - P⁻) + (B/1⁻ - P⁻)
         = {A} + ({A} - {X})
 ```
 
-That expression resolves trivially to *{A}* when using SameChange::Accept.
+That expression resolves trivially to _{A}_ when using SameChange::Accept.
 
 #### Example 4: divergent commits with different parents, must prompt user to choose parents
 
-If instead *P* is a child of some other commit *X*, the story is a bit
+If instead _P_ is a child of some other commit _X_, the story is a bit
 different:
 
 ```console
@@ -281,10 +281,10 @@ In this case parents will be
 ```
 
 Since this does not trivially resolve, the command prompts the user to select
-the desired parents for the solution: either *{A}* or *{C}*.
+the desired parents for the solution: either _{A}_ or _{C}_.
 
-Assume the user chooses *{C}*. The command then rebases (in memory) *B/0*, *B/1*
-and *P* onto the chosen parents:
+Assume the user chooses _{C}_. The command then rebases (in memory) _B/0_, _B/1_
+and _P_ onto the chosen parents:
 
 ```
 In-memory commits after rebasing B/0, B/1 and P on top of C (edges represent
@@ -303,14 +303,14 @@ B/0'
 C
 ```
 
-As a result we obtain *B/0'*, *B/1'* and *P'*, and these are sibling commits. At
+As a result we obtain _B/0'_, _B/1'_ and _P'_, and these are sibling commits. At
 this point the command does a 3-way merge of `MergedTree` objects to produce
-`MergedState::tree` (in reality it is enough to rebase the commit *trees*).
+`MergedState::tree` (in reality it is enough to rebase the commit _trees_).
 
 #### Example 5: more than 2 divergent commits
 
 There can be more than 2 visible commits for a given change-id. We are assuming
-here *B/0*, *B/1* and *B/2* are all direct successors of commit *P* (which is
+here _B/0_, _B/1_ and _B/2_ are all direct successors of commit _P_ (which is
 invisible).
 
 ```console
@@ -327,21 +327,21 @@ A
 
 This is completely analogous to the first example, we simply have more terms on
 all merges. The same thing applies to all previous examples, in all cases we can
-deal with any number of divergent commits for change *B*.
+deal with any number of divergent commits for change _B_.
 
 ### Examples and expected behavior (with arbitrary evolution graph)
 
 So far we only considered simple cases where all divergent commits are direct
-successors of a common predecessor *P*. Now we extend the ideas to arbitrary
-evolution history. To that end we introduce the *"truncated evolution graph for
-B/0, B/1, ... , B/n"*, where *B/0, B/1, ... , B/n* are two or more commits with
-the same change-id *B*. This is a directed graph. Its nodes are commits for
-change-id *B* and the edges are from a commit to its (immediate) predecessor(s),
+successors of a common predecessor _P_. Now we extend the ideas to arbitrary
+evolution history. To that end we introduce the _"truncated evolution graph for
+B/0, B/1, ... , B/n"_, where _B/0, B/1, ... , B/n_ are two or more commits with
+the same change-id _B_. This is a directed graph. Its nodes are commits for
+change-id _B_ and the edges are from a commit to its (immediate) predecessor(s),
 ignoring predecessors with unrelated change-ids. The graph is built by
 traversing the operation log and associated View objects, adding nodes and
 predecessor edges as needed. Nodes are added this way until a single most-recent
 common predecessor commit is found. We call the most-recent common predecessor
-the *"evolution fork point of B/0, ... , B/n"*. The traversal keeps track of
+the _"evolution fork point of B/0, ... , B/n"_. The traversal keeps track of
 visited commits to avoid infinite loops [^footnote-about-evolog-cycles]
 [^virtual-evolution-fork-point].
 
@@ -365,12 +365,12 @@ Q /     (description: "v2")
 P       (description: "v1")
 ```
 
-Commit *P* evolved into *Q* and *B/1*, and *Q* evolved into *B/0*. As before
-*B/0* and *B/1* are visible, *P* and *Q* are not. Since both sides of the
+Commit _P_ evolved into _Q_ and _B/1_, and _Q_ evolved into _B/0_. As before
+_B/0_ and _B/1_ are visible, _P_ and _Q_ are not. Since both sides of the
 evolution transitioned from "v1" to "v2", and then one side further transitioned
 to "v3", it seems a good heuristic to take "v3" as the description of the
 solution. Note that this observation would not be possible if the algorithm only
-considered the leafs (*B/0*, *B/1*) and their evolution fork point (*P*).
+considered the leafs (_B/0_, _B/1_) and their evolution fork point (_P_).
 
 Note: Why do we care about divergence producing two commits with the exact same
 change? It may seem this would be a very uncommon scenario, however, as
@@ -379,18 +379,18 @@ this is in fact fairly common at Google due to the distributed nature of
 Google's backend filesystem.
 
 To implement the heuristic we outlined above in example 6 (i.e. to produce
-"v3"), we propose introducing a new *try_resolve_deduplicating_same_diffs*
+"v3"), we propose introducing a new _try_resolve_deduplicating_same_diffs_
 method to `Merge<T>`, and using that in calls to attempt to resolve the
 MergedState::description, MergedState::parent, MergedState::author and
 MergedState::trees. try_resolve_deduplicate_same_diffs is similar to
-resolve_trivial, but it counts multiple identical *(X - Y)* terms exactly once,
+resolve_trivial, but it counts multiple identical _(X - Y)_ terms exactly once,
 otherwise it follows the same flow as resolve_trivial with SameChange::Accept.
 
-We illustrate what *try_resolve_deduplicating_same_diffs* does when resolving
+We illustrate what _try_resolve_deduplicating_same_diffs_ does when resolving
 the description merge for the case in example 6. We build a `Merge<String>`,
-starting with the description of the evolution fork point *P*, then adding
-*desc(Y) - desc(X)* terms for each *X->Y* edge in the truncated evolution graph.
-Then we call *try_resolve_deduplicating_same_diffs* to get:
+starting with the description of the evolution fork point _P_, then adding
+_desc(Y) - desc(X)_ terms for each _X->Y_ edge in the truncated evolution graph.
+Then we call _try_resolve_deduplicating_same_diffs_ to get:
 
 ```
 P + (Q - P) + (B/1 - P) + (B/0 - Q) =
@@ -400,7 +400,7 @@ P + (Q - P) + (B/1 - P) + (B/0 - Q) =
        = v3
 ```
 
-*try_resolve_deduplicating_same_diffs* returns our desired value "v3". Note that
+_try_resolve_deduplicating_same_diffs_ returns our desired value "v3". Note that
 resolve_trivial (with either SameChange value) would return none. Here is
 another example:
 
@@ -415,7 +415,7 @@ Q /     ( foo.txt contents: "v1" )
 P       ( foo.txt contents: "v1" )
 ```
 
-In this case *try_resolve_deduplicating_same_diffs* produces none. jj converge
+In this case _try_resolve_deduplicating_same_diffs_ produces none. jj converge
 cannot automatically resolve this merge so the user has to merge the
 description: the command invokes the user's merge-tool with base "v1" and sides
 "v2"/"v3".
@@ -423,30 +423,30 @@ description: the command invokes the user's merge-tool with base "v1" and sides
 ### Edge cases when choosing the parents of the solution
 
 When attempting to produce the solution parents, the command applies
-*try_resolve_deduplicating_same_diffs* to MergedState::parents (of type
+_try_resolve_deduplicating_same_diffs_ to MergedState::parents (of type
 `Merge<Vec<CommitId>>`). If the result is `Some<Vec<CommitId>>` we have a set of
 possible parents for the solution. If these candidate parents are all visible
-commits with change-ids other than *B*, and none of those are descendants of
-*B/0, B/1, ... B/n*, then we have the desired parents for the solution commit.
+commits with change-ids other than _B_, and none of those are descendants of
+_B/0, B/1, ... B/n_, then we have the desired parents for the solution commit.
 
 On the other hand,
 
-*   if any candidate parent is a descendant of one of the divergent commits we
-    are trying to solve, or
-*   if any of the candidate parents are hidden and the chain starting at visible
-    roots and leading up to and including the parent has any commit for the
-    divergent change we are trying to solve (*B*), or for any other visible
-    commit (divergent or not), or the chain itself has two or more commits with
-    the same change-id,
+- if any candidate parent is a descendant of one of the divergent commits we
+  are trying to solve, or
+- if any of the candidate parents are hidden and the chain starting at visible
+  roots and leading up to and including the parent has any commit for the
+  divergent change we are trying to solve (_B_), or for any other visible
+  commit (divergent or not), or the chain itself has two or more commits with
+  the same change-id,
 
 then we would introduce new divergence or cycles in the commit graph if we based
 on the solution on such candidate parents. In these edge cases the command will
 simply discard the candidate parents and will instead ask the user to choose
 which parents to use (or quit without making any changes). Care must be
 taken when picking the options to present to the user for choosing parents:
-essentially the user will choose between the parents of *B/0*, the parents of
-*B/1*, and so on, but we will skip any *B/i* if any of the parents of *B/i*
-descends from any *B/j*. Since the commit graph is a DAG, at least one option is
+essentially the user will choose between the parents of _B/0_, the parents of
+_B/1_, and so on, but we will skip any _B/i_ if any of the parents of _B/i_
+descends from any _B/j_. Since the commit graph is a DAG, at least one option is
 viable.
 
 ## Multiple divergent change-ids
@@ -482,7 +482,7 @@ probably best to error out.
 
 ## Open questions
 
-*   Do we ever have divergence of committer? Is it safe to mess with committer?
+- Do we ever have divergence of committer? Is it safe to mess with committer?
 
 ## Alternatives considered
 
@@ -503,9 +503,9 @@ algorithm for just 2 commits, but we chose to think about the more general case.
 ### Only considering the evolution fork point and visible commits
 
 As explained in example 6 this proposal uses the truncated evolution graph and
-*try_resolve_deduplicating_same_diffs* to produce the solution. That example
+_try_resolve_deduplicating_same_diffs_ to produce the solution. That example
 shows why we think this leads to a better heuristic. We could instead only
-consider *P* and *B/0, B/1, ... , B/n*. That would be slightly simpler.
+consider _P_ and _B/0, B/1, ... , B/n_. That would be slightly simpler.
 
 [^footnote-about-evolog-cycles]: It is unclear if the evolution history can
     contain cycles today, but there has been some
@@ -513,11 +513,12 @@ consider *P* and *B/0, B/1, ... , B/n*. That would be slightly simpler.
     cycles. In any case, it is very easy to deal
     with that possibility, so we may as well handle
     it?
+
 [^virtual-evolution-fork-point]: Today there should always be a single evolution
     fork point. However, we could handle cases
     where a change-id "emanates from multiple
-    initial commits" by adding a single *virtual
-    evolution fork point* commit with empty state:
+    initial commits" by adding a single _virtual
+    evolution fork point_ commit with empty state:
     empty description, empty tree and empty author,
     and having the root commit as its parent, and
     treating it as a predecessor of all initial

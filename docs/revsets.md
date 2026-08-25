@@ -75,45 +75,52 @@ y) | z` or `x & (y | z)`.
 
 <!-- The following list is based on `PRATT` in `revset_parser.rs`. -->
 
-1. * `f(x)`: Function call.
+1.
+   - `f(x)`: Function call.
 
-2. * `x-`: Parents of `x`, can be empty.
-   * `x+`: Children of `x`, can be empty.
+2.
+   - `x-`: Parents of `x`, can be empty.
+   - `x+`: Children of `x`, can be empty.
 
-3. * `p:x`: String/date pattern or pattern alias named `p`.
+3.
+   - `p:x`: String/date pattern or pattern alias named `p`.
 
-4. * `x::`: Descendants of `x`, including the commits in `x` itself. Equivalent to
+4.
+   - `x::`: Descendants of `x`, including the commits in `x` itself. Equivalent to
      `x::visible_heads()` if no hidden revisions are mentioned.
-   * `x..`: Revisions that are not ancestors of `x`. Equivalent to `~::x`, and
+   - `x..`: Revisions that are not ancestors of `x`. Equivalent to `~::x`, and
      `x..visible_heads()` if no hidden revisions are mentioned.
-   * `::x`: Ancestors of `x`, including the commits in `x` itself. Shorthand for
+   - `::x`: Ancestors of `x`, including the commits in `x` itself. Shorthand for
      `root()::x`.
-   * `..x`: Ancestors of `x`, including the commits in `x` itself, but excluding
+   - `..x`: Ancestors of `x`, including the commits in `x` itself, but excluding
      the root commit. Shorthand for `root()..x`. Equivalent to `::x ~ root()`.
-   * `x::y`: Descendants of `x` that are also ancestors of `y`. Equivalent
-      to `x:: & ::y`. This is what `git log` calls `--ancestry-path x..y`.
-   * `x..y`: Ancestors of `y` that are not also ancestors of `x`. Equivalent to
+   - `x::y`: Descendants of `x` that are also ancestors of `y`. Equivalent
+     to `x:: & ::y`. This is what `git log` calls `--ancestry-path x..y`.
+   - `x..y`: Ancestors of `y` that are not also ancestors of `x`. Equivalent to
      `::y ~ ::x`. This is what `git log` calls `x..y` (i.e. the same as we call it).
-     Note that this is *not* a "path" between `x` and `y` in the commit graph -- `x`
+     Note that this is _not_ a "path" between `x` and `y` in the commit graph -- `x`
      and `y` do not need to be related by ancestry.
-   * `::`: All visible commits in the repo. Equivalent to `all()`, and
+   - `::`: All visible commits in the repo. Equivalent to `all()`, and
      `root()::visible_heads()` if no hidden revisions are mentioned.
-   * `..`: All visible commits in the repo, but excluding the root commit.
+   - `..`: All visible commits in the repo, but excluding the root commit.
      Equivalent to `~root()`, and `root()..visible_heads()` if no hidden revisions
      are mentioned.
 
-5. * `~x`: Revisions that are not in `x`.
+5.
+   - `~x`: Revisions that are not in `x`.
 
-6. * `x & y`: Revisions that are in both `x` and `y`.
-   * `x ~ y`: Revisions that are in `x` but not in `y`.
+6.
+   - `x & y`: Revisions that are in both `x` and `y`.
+   - `x ~ y`: Revisions that are in `x` but not in `y`.
 
-7. * `x | y`: Revisions that are in either `x` or `y` (or both).
+7.
+   - `x | y`: Revisions that are in either `x` or `y` (or both).
 
 **Note:** The `..` operator does not distribute over union (`|`) on its left
 side. For example, `(A | B)..` is **not** equivalent to `A.. | B..`. The
-expression `(A | B)..` means "commits that are not ancestors of A *and* not
+expression `(A | B)..` means "commits that are not ancestors of A _and_ not
 ancestors of B", while `A.. | B..` means "commits that are not ancestors of A
-*or* not ancestors of B". In fact, `(A | B).. = A.. & B..`. See the examples
+_or_ not ancestors of B". In fact, `(A | B).. = A.. & B..`. See the examples
 below for concrete illustrations.
 
 <!-- The following format will be understood by the web site generator, and will
@@ -241,59 +248,58 @@ revsets (expressions) as arguments.
     * `remote_bookmarks("main", remote="origin")`
     * `remote_bookmarks(remote="origin")`
 
-* `parents(x, [depth])`: `parents(x)` is the same as `x-`.
+- `parents(x, [depth])`: `parents(x)` is the same as `x-`.
   `parents(x, depth)` returns the parents of `x` at the given `depth`. For
   instance, `parents(x, 3)` is equivalent to `x---`.
 
-* `children(x, [depth])`: `children(x)` is the same as `x+`.
+- `children(x, [depth])`: `children(x)` is the same as `x+`.
   `children(x, depth)` returns the children of `x` at the given `depth`. For
   instance, `children(x, 3)` is equivalent to `x+++`.
 
-* `ancestors(x, [depth])`: `ancestors(x)` is the same as `::x`.
+- `ancestors(x, [depth])`: `ancestors(x)` is the same as `::x`.
   `ancestors(x, depth)` returns the ancestors of `x` limited to the given
   `depth`.
 
-* `descendants(x, [depth])`: `descendants(x)` is the same as `x::`.
+- `descendants(x, [depth])`: `descendants(x)` is the same as `x::`.
   `descendants(x, depth)` returns the descendants of `x` limited to the given
   `depth`.
 
-* `first_parent(x, [depth])`: `first_parent(x)` is similar to `parents(x)`, but
+- `first_parent(x, [depth])`: `first_parent(x)` is similar to `parents(x)`, but
   for merges, it only returns the first parent instead of returning all parents.
   The `depth` argument also works similarly, so `first_parent(x, 2)` is
   equivalent to `first_parent(first_parent(x))`.
 
-* `first_ancestors(x, [depth])`: Similar to `ancestors(x, [depth])`, but only
+- `first_ancestors(x, [depth])`: Similar to `ancestors(x, [depth])`, but only
   traverses the first parent of each commit. In Git, the first parent of a merge
   commit is conventionally the branch into which changes are being merged, so
   `first_ancestors()` can be used to exclude changes made on other branches.
 
-* `reachable(srcs, domain)`: All commits reachable from `srcs`, traversing all
+- `reachable(srcs, domain)`: All commits reachable from `srcs`, traversing all
   parent and child edges, such that the entire path is within `domain`. This is
   useful for finding all related commits in a branch or feature without
   traversing outside a defined scope. For example, `reachable(@, mutable())`
   returns the stack of commits you are working on.
 
-* `connected(x)`: Same as `x::x`. Useful when `x` includes several commits.
+- `connected(x)`: Same as `x::x`. Useful when `x` includes several commits.
 
-* `all()`: All visible commits and ancestors of commits explicitly mentioned.
+- `all()`: All visible commits and ancestors of commits explicitly mentioned.
 
-* `none()`: No commits. This function is rarely useful; it is provided for
+- `none()`: No commits. This function is rarely useful; it is provided for
   completeness.
 
-* `change_id(prefix)`: Commits with the given change ID prefix. If the specified
+- `change_id(prefix)`: Commits with the given change ID prefix. If the specified
   change is divergent, this resolves to multiple commits. It is an error to use a
   non-unique prefix. Unmatched prefix isn't an error.
 
-* `commit_id(prefix)`: Commits with the given commit ID prefix. It is an error
+- `commit_id(prefix)`: Commits with the given commit ID prefix. It is an error
   to use a non-unique prefix. Unmatched prefix isn't an error.
 
-* `bookmarks([pattern])`: All local bookmark targets. If `pattern` is specified,
-  this selects the bookmarks whose name match the given [string
-  pattern](#string-patterns). For example, `bookmarks(*push*)` would match the
+- `bookmarks([pattern])`: All local bookmark targets. If `pattern` is specified,
+  this selects the bookmarks whose name match the given [string pattern](#string-patterns). For example, `bookmarks(*push*)` would match the
   bookmarks `push-123` and `repushed` but not the bookmark `main`. If a bookmark
   is in a conflicted state, all its possible targets are included.
 
-* `remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All remote
+- `remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All remote
   bookmarks targets across all remotes. If just the `name_pattern` is specified,
   the bookmarks whose names match the given [string pattern](#string-patterns)
   across all remotes are selected. If both `name_pattern` and `remote_pattern`
@@ -308,125 +314,122 @@ revsets (expressions) as arguments.
   Git-tracking bookmarks are excluded by default. Use `remote="git"` or
   `remote="*"` to select bookmarks including `@git` ones.
 
-* `tracked_remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All
+- `tracked_remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All
   targets of tracked remote bookmarks. Supports the same optional arguments as
   `remote_bookmarks()`.
 
-* `untracked_remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All
+- `untracked_remote_bookmarks([name_pattern], [[remote=]remote_pattern])`: All
   targets of untracked remote bookmarks. Supports the same optional arguments as
   `remote_bookmarks()`.
 
-* `tags([pattern])`: All tag targets. If `pattern` is specified, this selects
+- `tags([pattern])`: All tag targets. If `pattern` is specified, this selects
   the tags whose name match the given [string pattern](#string-patterns). For
   example, `tags(*v1*)` would match the tags `v123` and `rev1` but not the tag
   `v2`. If a tag is in a conflicted state, all its possible targets are
   included.
 
-* `remote_tags([name_pattern], [[remote=]remote_pattern])`: All remote tags
+- `remote_tags([name_pattern], [[remote=]remote_pattern])`: All remote tags
   targets across all remotes. See `remote_bookmarks()` for arguments.
 
-* `visible_heads()`: All visible heads (same as `heads(all())` if no hidden
+- `visible_heads()`: All visible heads (same as `heads(all())` if no hidden
   revisions are mentioned).
 
-* `root()`: The virtual commit that is the oldest ancestor of all other commits.
+- `root()`: The virtual commit that is the oldest ancestor of all other commits.
 
-* `heads(x)`: Commits in `x` that are not ancestors of other commits in `x`.
+- `heads(x)`: Commits in `x` that are not ancestors of other commits in `x`.
   Equivalent to `x ~ ::x-`. Note that this is different from
   [Mercurial's](https://repo.mercurial-scm.org/hg/help/revsets) `heads(x)`
   function, which is equivalent to `x ~ x-`.
 
-* `roots(x)`: Commits in `x` that are not descendants of other commits in `x`.
+- `roots(x)`: Commits in `x` that are not descendants of other commits in `x`.
   Equivalent to `x ~ x+::`. Note that this is different from
   [Mercurial's](https://repo.mercurial-scm.org/hg/help/revsets) `roots(x)`
   function, which is equivalent to `x ~ x+`.
 
-* `latest(x, [count])`: Latest `count` commits in `x`, based on committer
+- `latest(x, [count])`: Latest `count` commits in `x`, based on committer
   timestamp. The default `count` is 1.
 
-* `fork_point(x)`: The fork point of all commits in `x`. The fork point is the
+- `fork_point(x)`: The fork point of all commits in `x`. The fork point is the
   common ancestor(s) of all commits in `x` which do not have any descendants
   that are also common ancestors of all commits in `x`. It is equivalent to
   the revset `heads(::x_1 & ::x_2 & ... & ::x_N)`, where `x_{1..N}` are commits
   in `x`. If `x` resolves to a single commit, `fork_point(x)` resolves to `x`.
 
-* `merge_point(x)`: The merge point of all commits in `x`. Similar to the fork
+- `merge_point(x)`: The merge point of all commits in `x`. Similar to the fork
   point, the merge point is the common descendant(s) of all commits in `x` which
   do not have any ancestors that are also common descendants of all commits in
   `x`. It is equivalent to the revset `roots(x_1:: & x_2:: & ... & x_N::)`,
   where `x_{1..N}` are commits in `x`. If `x` resolves to a single commit,
   `merge_point(x)` resolves to `x`.
 
-* `bisect(x)`: Finds commits in the input set for which about half of the input
+- `bisect(x)`: Finds commits in the input set for which about half of the input
   set are descendants. The current implementation deals somewhat poorly with
   non-linear history.
 
-* `exactly(x, count)`: Evaluates `x`, and errors if it is not of exactly size
+- `exactly(x, count)`: Evaluates `x`, and errors if it is not of exactly size
   `count`. Otherwise, returns `x`. This is useful in particular with `count=1`
   when you want to ensure that some revset expression has exactly one target.
 
-* `merges()`: Merge commits.
+- `merges()`: Merge commits.
 
-* `forks()`: Fork commits, i.e. those with more than 1 child.
+- `forks()`: Fork commits, i.e. those with more than 1 child.
 
-* `description(pattern)`: Commits that have a description matching the given
+- `description(pattern)`: Commits that have a description matching the given
   [string pattern](#string-patterns).
 
   A non-empty description is usually terminated with newline character. For
   example, `description("")` matches commits without description, and
   `description("foo\n")` matches commits with description `"foo\n"`.
 
-* `subject(pattern)`: Commits that have a subject matching the given [string
-  pattern](#string-patterns). A subject is the first line of the description
+- `subject(pattern)`: Commits that have a subject matching the given [string pattern](#string-patterns). A subject is the first line of the description
   (without newline character.)
 
-* `author(pattern)`: Commits with the author's name or email matching the given
+- `author(pattern)`: Commits with the author's name or email matching the given
   [string pattern](#string-patterns). Equivalent to `author_name(pattern) |
   author_email(pattern)`.
 
-* `author_name(pattern)`: Commits with the author's name matching the given
+- `author_name(pattern)`: Commits with the author's name matching the given
   [string pattern](#string-patterns).
 
-* `author_email(pattern)`: Commits with the author's email matching the given
+- `author_email(pattern)`: Commits with the author's email matching the given
   [string pattern](#string-patterns).
 
-* `author_date(pattern)`: Commits with [author dates](glossary.md#author-date)
+- `author_date(pattern)`: Commits with [author dates](glossary.md#author-date)
   matching the specified [date pattern](#date-patterns).
 
-* `mine()`: Commits where the author's email matches the email of the current
+- `mine()`: Commits where the author's email matches the email of the current
   user. Equivalent to `author_email(exact-i:<user-email>)`
 
-* `committer(pattern)`: Commits with the committer's name or email matching the
+- `committer(pattern)`: Commits with the committer's name or email matching the
   given [string pattern](#string-patterns). Equivalent to
   `committer_name(pattern) | committer_email(pattern)`.
 
-* `committer_name(pattern)`: Commits with the committer's name matching the
+- `committer_name(pattern)`: Commits with the committer's name matching the
   given [string pattern](#string-patterns).
 
-* `committer_email(pattern)`: Commits with the committer's email matching the
+- `committer_email(pattern)`: Commits with the committer's email matching the
   given [string pattern](#string-patterns).
 
-* `committer_date(pattern)`: Commits with
-  [committer dates](glossary.md#committer-date) matching the specified [date
-  pattern](#date-patterns).
+- `committer_date(pattern)`: Commits with
+  [committer dates](glossary.md#committer-date) matching the specified [date pattern](#date-patterns).
 
-* `signed()`: Commits that are cryptographically signed.
+- `signed()`: Commits that are cryptographically signed.
 
-* `empty()`: Commits modifying no files. This also includes `merges()` without
+- `empty()`: Commits modifying no files. This also includes `merges()` without
   user modifications and `root()`.
 
-* `files(expression)`: Commits modifying paths matching the given [fileset
-  expression](filesets.md).
+- `files(expression)`: Commits modifying paths matching the given [fileset expression](filesets.md).
 
   Paths are relative to the directory `jj` was invoked from. A directory name
   will match all files in that directory and its subdirectories.
 
   For example, `files(foo)` will match files `foo`, `foo/bar`, `foo/bar/baz`.
-  It will *not* match `foobar` or `bar/foo`.
+  It will _not_ match `foobar` or `bar/foo`.
 
   Some file patterns might need quoting because the `expression` must also be
   parsable as a revset. For example, `.` has to be quoted in `files(".")`.
 
-* `diff_lines(text, [files])`: Commits containing diffs matching the given
+- `diff_lines(text, [files])`: Commits containing diffs matching the given
   `text` pattern line by line.
 
   The search paths can be narrowed by the `files` expression. All modified files
@@ -436,26 +439,26 @@ revsets (expressions) as arguments.
   For example, `diff_lines("*TODO*", "src")` will search revisions where "TODO"
   is added to or removed from files under "src".
 
-* `diff_lines_added(text, [files])`: like `diff_lines()` above, but matches only
+- `diff_lines_added(text, [files])`: like `diff_lines()` above, but matches only
   the "added" side of the diff.
 
-* `diff_lines_removed(text, [files])`: like `diff_lines()` above, but matches
+- `diff_lines_removed(text, [files])`: like `diff_lines()` above, but matches
   only the "removed" side of the diff.
 
-* `conflicts()`: Commits that have files in a conflicted state.
+- `conflicts()`: Commits that have files in a conflicted state.
 
-* `divergent()`: Commits that are [divergent](glossary.md#divergent-change).
+- `divergent()`: Commits that are [divergent](glossary.md#divergent-change).
 
-* `present(x)`: Same as `x`, but evaluated to `none()` if any of the commits
+- `present(x)`: Same as `x`, but evaluated to `none()` if any of the commits
   in `x` doesn't exist (e.g. is an unknown bookmark name.)
 
-* `coalesce(revsets...)`: Commits in the first revset in the list of `revsets`
+- `coalesce(revsets...)`: Commits in the first revset in the list of `revsets`
   which does not evaluate to `none()`. If all revsets evaluate to `none()`, then
   the result of `coalesce` will also be `none()`.
 
-* `working_copies()`: The working copy commits across all the workspaces.
+- `working_copies()`: The working copy commits across all the workspaces.
 
-* `at_operation(op, x)`: Evaluates `x` at the specified [operation][]. For
+- `at_operation(op, x)`: Evaluates `x` at the specified [operation][operation]. For
   example, `at_operation(@-, visible_heads())` will return all heads which were
   visible at the previous operation.
 
@@ -532,12 +535,10 @@ quotes are optional).
 
 By default, `"string"` is parsed as a `glob:` pattern.
 
-* `exact:"string"`: Matches strings exactly equal to `string`.
-* `glob:"pattern"`: Matches strings with Unix-style shell [wildcard
-  `pattern`](https://docs.rs/globset/latest/globset/#syntax).
-* `regex:"pattern"`: Matches substrings with [regular
-  expression `pattern`](https://docs.rs/regex/latest/regex/#syntax).
-* `substring:"string"`: Matches strings that contain `string`.
+- `exact:"string"`: Matches strings exactly equal to `string`.
+- `glob:"pattern"`: Matches strings with Unix-style shell [wildcard `pattern`](https://docs.rs/globset/latest/globset/#syntax).
+- `regex:"pattern"`: Matches substrings with [regular expression `pattern`](https://docs.rs/regex/latest/regex/#syntax).
+- `substring:"string"`: Matches strings that contain `string`.
 
 You can append `-i` after the kind to match case‐insensitively (e.g.
 `glob-i:"fix*jpeg*"`).
@@ -545,30 +546,30 @@ You can append `-i` after the kind to match case‐insensitively (e.g.
 String patterns can be combined by using logical operators
 (e.g. `bookmarks(~glob:"ci/*")`):
 
-* `~x`: Matches everything but `x`.
-* `x & y`: Matches both `x` and `y`.
-* `x ~ y`: Matches `x` but not `y`.
-* `x | y`: Matches either `x` or `y` (or both).
+- `~x`: Matches everything but `x`.
+- `x & y`: Matches both `x` and `y`.
+- `x ~ y`: Matches `x` but not `y`.
+- `x | y`: Matches either `x` or `y` (or both).
 
 ## Date patterns
 
 Functions that perform date matching support the following pattern syntax:
 
-* `after:"string"`: Matches dates exactly at or after the given date.
-* `before:"string"`: Matches dates before, but not including, the given date.
+- `after:"string"`: Matches dates exactly at or after the given date.
+- `before:"string"`: Matches dates before, but not including, the given date.
 
 Date strings can be specified in several forms, including:
 
-* 2024-02-01
-* 2024-02-01T12:00:00
-* 2024-02-01T12:00:00-08:00
-* 2024-02-01 12:00:00
-* 2 days ago
-* 5 minutes ago
-* yesterday
-* yesterday 5pm
-* yesterday 10:30
-* yesterday 15:30
+- 2024-02-01
+- 2024-02-01T12:00:00
+- 2024-02-01T12:00:00-08:00
+- 2024-02-01 12:00:00
+- 2 days ago
+- 5 minutes ago
+- yesterday
+- yesterday 5pm
+- yesterday 10:30
+- yesterday 15:30
 
 ## Aliases
 
@@ -614,7 +615,7 @@ are defined as aliases in order to allow you to overwrite them as needed.
 See [revsets.toml](https://github.com/jj-vcs/jj/blob/main/cli/src/config/revsets.toml)
 for a comprehensive list.
 
-* `trunk()`: Resolves to the head commit for the default bookmark of the default
+- `trunk()`: Resolves to the head commit for the default bookmark of the default
   remote, or the remote named `upstream` or `origin`. This is set at the
   repository level upon initialization of a Jujutsu repository.
 
@@ -632,41 +633,40 @@ for a comprehensive list.
   'trunk()' = 'your-bookmark@your-remote'
   ```
 
-* `builtin_log()`: Resolves to `present(@) |
+- `builtin_log()`: Resolves to `present(@) |
   ancestors(immutable_heads().., 2) | trunk()`. It is used as the default value
   for `revsets.log`, which is the set of revisions shown by `jj log` if no
   revisions or paths are specified.
 
-* `builtin_immutable_heads()`: Resolves to `trunk() | tags() |
+- `builtin_immutable_heads()`: Resolves to `trunk() | tags() |
   untracked_remote_bookmarks()`. It is used as the default definition for
   `immutable_heads()` below. It is not recommended to redefine this
   alias. Prefer to redefine `immutable_heads()` instead.
 
-* `immutable_heads()`: The heads of the set of immutable commits (not "heads
+- `immutable_heads()`: The heads of the set of immutable commits (not "heads
   that are immutable"). Resolves to `trunk() | tags() |
   untracked_remote_bookmarks()` by default. It is actually defined as
   `builtin_immutable_heads()`, and can be overridden as required. The full set
   of immutable commits is `::immutable_heads()` (i.e., `immutable()`). See
   [here](config.md#set-of-immutable-commits) for details.
 
-* `immutable()`: The set of commits that `jj` treats as immutable. This is
+- `immutable()`: The set of commits that `jj` treats as immutable. This is
   equivalent to `::(immutable_heads() | root())`. It is not recommended to redefine
-  this alias. Note that modifying this will *not* change whether a commit is immutable.
+  this alias. Note that modifying this will _not_ change whether a commit is immutable.
   To do that, edit `immutable_heads()`.
 
-* `mutable()`: The set of commits that `jj` treats as mutable. This is
+- `mutable()`: The set of commits that `jj` treats as mutable. This is
   equivalent to `~immutable()`. It is not recommended to redefine this alias.
-  Note that modifying this will *not* change whether a commit is immutable.
+  Note that modifying this will _not_ change whether a commit is immutable.
   To do that, edit `immutable_heads()`.
 
-* `visible()`: The set of visible commits. Resolves to `::visible_heads()`.
+- `visible()`: The set of visible commits. Resolves to `::visible_heads()`.
   This is equal to `all()` unless your revset includes
   [hidden revisions](#hidden-revisions).
 
-* `hidden()`: The set of hidden commits. Resolves to `~visible()`. This is empty
+- `hidden()`: The set of hidden commits. Resolves to `~visible()`. This is empty
   unless your revset includes [hidden revisions](#hidden-revisions). Note that
-  this is *not* [the set of all previously visible
-  commits](https://github.com/jj-vcs/jj/issues/2623).
+  this is _not_ [the set of all previously visible commits](https://github.com/jj-vcs/jj/issues/2623).
 
 ## Examples
 

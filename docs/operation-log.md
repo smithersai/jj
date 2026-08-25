@@ -22,8 +22,8 @@ operation.
 
 The following operators are supported:
 
-* `x-`: Parents of `x` (e.g. `@-`)
-* `x+`: Children of `x`
+- `x-`: Parents of `x` (e.g. `@-`)
+- `x+`: Children of `x`
 
 ## Divergent operations
 

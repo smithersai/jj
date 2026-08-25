@@ -14,62 +14,61 @@ The following list describes which Git features Jujutsu is compatible with. For
 a comparison with Git, including how workflows are different, see the
 [Git-comparison doc](git-comparison.md).
 
-* **Configuration: Partial.** The only configuration from Git (e.g. in
+- **Configuration: Partial.** The only configuration from Git (e.g. in
   `~/.gitconfig`) that's respected is the following. Feel free to file a bug if
   you miss any particular configuration options.
-  * The configuration of remotes (`[remote "<name>"]`). Simple fetch refspecs
+  - The configuration of remotes (`[remote "<name>"]`). Simple fetch refspecs
     are respected when branches are not explicitly specified on the CLI.
     (`git` is used for remote operations)
-  * `core.excludesFile`
-* **Authentication: Yes.** `git` is used for remote operations under the hood.
-* **Branches: Yes.** You can read more about
+  - `core.excludesFile`
+- **Authentication: Yes.** `git` is used for remote operations under the hood.
+- **Branches: Yes.** You can read more about
   [how branches work in Jujutsu](bookmarks.md)
   and [how they interoperate with Git](#branches).
-* **Tags: Partial.** You can check out tagged commits by name (pointed to by
+- **Tags: Partial.** You can check out tagged commits by name (pointed to by
   either annotated or lightweight tags). You can also create lightweight tags,
   but you cannot create annotated tags.
-* **.gitignore: Yes.** Patterns in `.gitignore` files are supported. So are
+- **.gitignore: Yes.** Patterns in `.gitignore` files are supported. So are
   ignores in `.git/info/exclude` or configured via Git's `core.excludesFile`
   config. Since working-copy files are snapshotted by almost every `jj` command,
   you might need to run `jj file untrack` to exclude newly ignored files from the
   working-copy commit. It's recommended to set up the ignore patterns earlier.
   The `.gitignore` support uses a native implementation, so please report a bug
   if you notice any difference compared to `git`.
-* **.gitattributes: No.** There's [#53](https://github.com/jj-vcs/jj/issues/53)
+- **.gitattributes: No.** There's [#53](https://github.com/jj-vcs/jj/issues/53)
   about adding support for at least the `eol` attribute.
-* **Hooks: No.** There's [#405](https://github.com/jj-vcs/jj/issues/405)
+- **Hooks: No.** There's [#405](https://github.com/jj-vcs/jj/issues/405)
   specifically for providing the checks from <https://pre-commit.com>.
-* **Merge commits: Yes.** Octopus merges (i.e. with more than 2 parents) are
+- **Merge commits: Yes.** Octopus merges (i.e. with more than 2 parents) are
   also supported.
-* **Detached HEAD: Yes.** Jujutsu supports anonymous branches, so this is a
+- **Detached HEAD: Yes.** Jujutsu supports anonymous branches, so this is a
   natural state.
-* **Orphan branch: Yes.** Jujutsu has a virtual root commit that appears as
+- **Orphan branch: Yes.** Jujutsu has a virtual root commit that appears as
   parent of all commits Git would call "root commits".
-* **Staging area: Kind of.** The staging area will be ignored. For example,
+- **Staging area: Kind of.** The staging area will be ignored. For example,
   `jj diff` will show a diff from the Git HEAD to the working copy. There are
-  [ways of fulfilling your use cases without a staging
-  area](git-comparison.md#the-index).
-* **Garbage collection: Yes.** It should be safe to run `git gc` in the Git
+  [ways of fulfilling your use cases without a staging area](git-comparison.md#the-index).
+- **Garbage collection: Yes.** It should be safe to run `git gc` in the Git
   repo, but it's not tested, so it's probably a good idea to make a backup of
   the whole workspace first. There's [no garbage collection and repacking of
   Jujutsu's own data structures yet](https://github.com/jj-vcs/jj/issues/12),
   however.
-* **Bare repositories: Yes.** You can use `jj git init --git-repo=<path>` to
+- **Bare repositories: Yes.** You can use `jj git init --git-repo=<path>` to
   create a repo backed by a bare Git repo.
-* **Submodules: No.** They will not show up in the working copy, but they will
+- **Submodules: No.** They will not show up in the working copy, but they will
   not be lost either.
-* **Partial clones: No.**
-* **Shallow clones: Kind of.** Shallow commits all have the virtual root commit
+- **Partial clones: No.**
+- **Shallow clones: Kind of.** Shallow commits all have the virtual root commit
   as their parent. However, deepening or fully unshallowing a repository is
   currently not yet supported and will cause issues.
-* **git-worktree: No.** However, there's native support for multiple working
+- **git-worktree: No.** However, there's native support for multiple working
   copies backed by a single repo. See the `jj workspace` family of commands.
-* **Sparse checkouts: No.** However, there's native support for sparse
+- **Sparse checkouts: No.** However, there's native support for sparse
   checkouts. See the `jj sparse` command.
-* **Signed commits: Yes.**
+- **Signed commits: Yes.**
   You can sign commits automatically [by configuration](config.md#commit-signing),
   or use the `jj sign` command.
-* **Git LFS: No.** ([#80](https://github.com/jj-vcs/jj/issues/80))
+- **Git LFS: No.** ([#80](https://github.com/jj-vcs/jj/issues/80))
 
 ## Creating an empty repo
 
@@ -130,41 +129,40 @@ main branch) or will have branches that are out of date with jj's bookmarks.
 
 Colocation can be disabled because it does have some disadvantages:
 
-* Interleaving `jj` and `git` commands increases the chance of confusing branch
-  conflicts or [conflicted (AKA divergent) change
-  ids](glossary.md#divergent-change). These never lose data, but can be
+- Interleaving `jj` and `git` commands increases the chance of confusing branch
+  conflicts or [conflicted (AKA divergent) change ids](glossary.md#divergent-change). These never lose data, but can be
   annoying.
 
-    Such interleaving can happen unknowingly. For example, some IDEs can cause
+  Such interleaving can happen unknowingly. For example, some IDEs can cause
   it because they automatically run `git fetch` in the background from time to
   time.
 
-* In colocated workspaces with a very large number of branches or other refs,
+- In colocated workspaces with a very large number of branches or other refs,
   `jj` commands can get noticeably slower because of the automatic
   `jj git import` executed on each command. This can be mitigated by
   occasionally running `jj util gc` to speed up the import (that command
   includes packing the Git refs).
 
-* Git tools will have trouble with revisions that contain conflicted files.
+- Git tools will have trouble with revisions that contain conflicted files.
   While `jj` renders these files with conflict markers in the working copy, they
   are stored in a non-human-readable fashion inside the repo. Git tools will
   often see this non-human-readable representation.
 
-* When a `jj` branch is conflicted, the position of the branch in the Git repo
+- When a `jj` branch is conflicted, the position of the branch in the Git repo
   will disagree with one or more of the conflicted positions. The state of that
   branch in git will be labeled as though it belongs to a remote named "git",
   e.g. `branch@git`.
 
-* Jujutsu will ignore Git's staging area. It will not understand merge conflicts
+- Jujutsu will ignore Git's staging area. It will not understand merge conflicts
   as Git represents them, unfinished `git rebase` states, as well as other less
   common states a Git repository can be in.
 
-* Colocated workspaces are less resilient to
+- Colocated workspaces are less resilient to
   [concurrency](technical/concurrency.md#syncing-with-rsync-nfs-dropbox-etc)
   issues if you share the repo using an NFS filesystem or Dropbox. In general,
   such use of Jujutsu is not currently thoroughly tested.
 
-* There may still be bugs when interleaving mutating `jj` and `git` commands,
+- There may still be bugs when interleaving mutating `jj` and `git` commands,
   usually having to do with a branch pointer ending up in the wrong place. We
   are working on the known ones, and are not aware of any major ones. Please
   report any new ones you find, or if any of the known bugs are less minor than

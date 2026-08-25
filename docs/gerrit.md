@@ -53,6 +53,7 @@ commit description in JJ.
 > set.
 
 ### Upload a single change
+
 ```shell
 # Upload @ if it has a description, otherwise uploads @-
 $ jj gerrit upload

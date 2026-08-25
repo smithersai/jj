@@ -13,8 +13,8 @@
     If you see a significant difference, feel free to file a bug, or a PR to note the difference here.
 
 {%
-  include-markdown "../cli/tests/cli-reference@.md.snap"
-  rewrite-relative-urls=false
-  start="<!-- BEGIN MARKDOWN-->"
-  comments=true
+include-markdown "../cli/tests/cli-reference@.md.snap"
+rewrite-relative-urls=false
+start="<!-- BEGIN MARKDOWN-->"
+comments=true
 %}

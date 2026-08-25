@@ -51,6 +51,7 @@ cargo install --locked --bin jj jj-cli
 ```
 
 #### Arch Linux
+
 You can install the `jujutsu` package from the [official extra repository](https://archlinux.org/packages/extra/x86_64/jujutsu/):
 
 ```shell
@@ -113,8 +114,7 @@ zypper install jujutsu
 
 #### Fedora Linux
 
-`jujutsu` has an unofficial [COPR
-repo](https://copr.fedorainfracloud.org/coprs/aldantanneo/jj-vcs) for Fedora:
+`jujutsu` has an unofficial [COPR repo](https://copr.fedorainfracloud.org/coprs/aldantanneo/jj-vcs) for Fedora:
 
 ```shell
 sudo dnf copr enable aldantanneo/jj-vcs

@@ -4,8 +4,7 @@ title: Tutorial
 
 > **Hint:** This tutorial covers the basics accurately, but since it was
 > written Jujutsu has gained many new features. For a tutorial covering a wider
-> range of features, you may find the (not quite finished) [tutorial by Steve
-> Klabnik](https://steveklabnik.github.io/jujutsu-tutorial/) helpful. If you're
+> range of features, you may find the (not quite finished) [tutorial by Steve Klabnik](https://steveklabnik.github.io/jujutsu-tutorial/) helpful. If you're
 > looking for a tutorial that doesn't require experience with Git, take a look
 > at [Jujutsu for everyone](https://jj-for-everyone.github.io).
 
@@ -512,11 +511,11 @@ saving. You can also use the mouse to click on the menu items to see more
 options (keyboard navigation is currently limited).
 
 [^alternative_diff_editors]: There are many other diff editors you could use.
-For example, if you have [Meld](https://meldmerge.org) installed and in the
-PATH, you can use it via `jj squash -i --tool meld` or a fancier config with `jj
+    For example, if you have [Meld](https://meldmerge.org) installed and in the
+    PATH, you can use it via `jj squash -i --tool meld` or a fancier config with `jj
 squash -i --tool meld-3`. You can configure the default with the
-[`ui.diff-editor` option](config.md#editing-diffs); those docs also explain how
-to specify a path to an executable if it is not in the PATH.
+    [`ui.diff-editor` option](config.md#editing-diffs); those docs also explain how
+    to specify a path to an executable if it is not in the PATH.
 
 If we look at the diff of the second commit, we now see that all three lines got
 capitalized:
@@ -536,7 +535,7 @@ index de980441c3..b1e67221af 100644
 +C
 ```
 
-The child change ("ABCD" in our case) will have the same content *state* after
+The child change ("ABCD" in our case) will have the same content _state_ after
 the `jj squash` command. That means that you can move any changes you want into
 the parent change, even if they touch the same word, and it won't cause any
 conflicts.

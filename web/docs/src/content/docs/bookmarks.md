@@ -144,22 +144,21 @@ fetched. If desired, you need to manually `jj bookmark track` them. This works
 well for repositories where multiple people work on a large number of bookmarks.
 
 The default can be changed by setting the config `remotes.<name>.auto-track-bookmarks = "*"`.
-Then, `jj git fetch` tracks every *newly fetched* bookmark with a local bookmark.
+Then, `jj git fetch` tracks every _newly fetched_ bookmark with a local bookmark.
 Branches that already existed before the `jj git fetch` are not affected. This
 is similar to Mercurial, which fetches all its bookmarks (equivalent to Git's
 branches) by default. Similarly, all newly created local bookmarks
 will be marked as "tracked", preparing them to be pushed with
-the next `jj git push` command. See ["Automatic tracking of
-bookmarks"](config.md#automatic-tracking-of-bookmarks) for details.
+the next `jj git push` command. See ["Automatic tracking of bookmarks"](config.md#automatic-tracking-of-bookmarks) for details.
 
 ## Bookmark updates
 
 Currently Jujutsu automatically updates local bookmarks when these conditions are
 met:
 
- * When a commit has been rewritten (e.g, when you rebase) bookmarks and the
-   working-copy will move along with it.
- * When a commit has been abandoned, all associated bookmarks will be deleted.
+- When a commit has been rewritten (e.g, when you rebase) bookmarks and the
+  working-copy will move along with it.
+- When a commit has been abandoned, all associated bookmarks will be deleted.
 
 You could describe the updates as following along the change-id of the
 current bookmark commit, even if it isn't entirely accurate.

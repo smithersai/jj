@@ -3,7 +3,7 @@
  -->
 
 {%
-  include-markdown "../CHANGELOG.md"
-  rewrite-relative-urls=true
-  comments=true
+include-markdown "../CHANGELOG.md"
+rewrite-relative-urls=true
+comments=true
 %}

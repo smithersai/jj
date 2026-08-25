@@ -15,14 +15,14 @@ results of rebasing across remote copies.
 Add support for copy information that is sufficient for at least the following
 use cases:
 
-* Diffing: If a file has been copied, show a diff compared to the source version
+- Diffing: If a file has been copied, show a diff compared to the source version
   instead of showing a full addition.
-* Merging: When one side of a merge (or rebase) has renamed a file and the other
+- Merging: When one side of a merge (or rebase) has renamed a file and the other
   side has modified it, propagate the changes to the other side. (There are many
   other cases to handle too.)
-* Log: It should be possible to run something like `jj log -p <file>` and follow
+- Log: It should be possible to run something like `jj log -p <file>` and follow
   the file backwards when it had been created by copying.
-* Annotate (blame): Similar to the log use case, we should follow the file
+- Annotate (blame): Similar to the log use case, we should follow the file
   backwards when it had been created by copying.
 
 The solution should support recording and retrieving copy info in a way that
@@ -251,8 +251,9 @@ K add foo
 
 Assuming the new files are different in each commit, we get the following trees.
 Notation:
-* `id`is the hash of the contents (the `FileId`)
-* The `2:bar->1:foo` means that copy ID 2 (i.e. hash of the `CopyHistory`
+
+- `id`is the hash of the contents (the `FileId`)
+- The `2:bar->1:foo` means that copy ID 2 (i.e. hash of the `CopyHistory`
   struct) has file `bar`, which was copied from copy ID `1`, where it was
   called `foo`.
 
@@ -323,10 +324,10 @@ into `baz`.
 
 So we get these diffs:
 
-* `baz` is deleted (deleting content `L`)
-* `bar` is created (with content `M`)
-* `foo` is renamed to `baz` (showing diff from `K` to `M`)
-* `bar` is merged into `baz` (showing diff from `L` to `M`)
+- `baz` is deleted (deleting content `L`)
+- `bar` is created (with content `M`)
+- `foo` is renamed to `baz` (showing diff from `K` to `M`)
+- `bar` is merged into `baz` (showing diff from `L` to `M`)
 
 #### Example: Divergent copy and rename (best rename target)
 
@@ -344,8 +345,8 @@ When diffing `L` to `N`, we find that all files are related. Since `bar` does
 not exist in the destination, we should find a rename target to match it with.
 We pick `baz` because it's closer in the graph than `qux` is. So the diff is:
 
-* `bar` is renamed to `baz`
-* `bar` is copied to `qux`
+- `bar` is renamed to `baz`
+- `bar` is copied to `qux`
 
 #### Example: Copy onto deleted file
 
@@ -488,7 +489,7 @@ N foo="N"
 K add foo="K"
 ```
 
-Let's say we rebase `M` onto `N`. The changes to `foo`, `foo2`, and` foo3` will
+Let's say we rebase `M` onto `N`. The changes to `foo`, `foo2`, and`foo3` will
 then all apply to `foo`, which means we get a 4-sided conflict.
 
 #### Example: Convergent renames
@@ -672,7 +673,7 @@ Do we ever want to record renames in the Git backend? If we do, we would
 presumably store it outside the Git object, similar to how we store the change
 id for commits.
 
-What do we use for trees where we *don't* have any copy graph recorded? If we
+What do we use for trees where we _don't_ have any copy graph recorded? If we
 simply create a new copy graph based on the current path, then the caller will
 never find any copies. Do we need an indexing pass to detect all renames in a
 repo when running `jj git init`? That can be very expensive for large repos.
@@ -727,17 +728,17 @@ files expensive.
 A rough implementation plan may look like this:
 
 1. Implement support for copy-tracking in the test backend
-3. Implement diff algorithm and test it
-4. Implement merge algorithm and test it
-5. Implement blame algorithm and test it
-6. Implement file-following log algorithm and test it
-7. Extract some queries to the commit backend trait so cloud-based backends
+2. Implement diff algorithm and test it
+3. Implement merge algorithm and test it
+4. Implement blame algorithm and test it
+5. Implement file-following log algorithm and test it
+6. Extract some queries to the commit backend trait so cloud-based backends
    (like the Google backend) can provide versions implemented using database
    indexes
-8. Implement support for copy-tracking in the Git backend. This may involve
+7. Implement support for copy-tracking in the Git backend. This may involve
    backfilling, possibly lazily. Or it may involve new abstractions in the
    commit backend trait.
-9.  Implement CLI for recording copies and for resolving conflicts in copies
+8. Implement CLI for recording copies and for resolving conflicts in copies
 
 ## Alternatives considered
 
@@ -789,20 +790,20 @@ DAG per file in addition to the revision DAG at the commit level).
 We considered storing copy info about the copies/renames in the commit object.
 That has some significant impact on the data model:
 
-* Without copy info, if there's a linear chain of commits A..D, you can find
+- Without copy info, if there's a linear chain of commits A..D, you can find
   the total diff by diffing just D-A. That works because (B-A)+(C-B)+(D-C)
   simplifies to just D-A. However, if there is copy info, the total diff will
   involve copy info. If that's associated with the individual commits, we will
   need to aggregate it somehow.
-* Restoring from another tree is no longer just a matter of copying that tree;
+- Restoring from another tree is no longer just a matter of copying that tree;
   we also need to figure out copies between the old tree and the new tree.
-* Conflict states are represented by a series of states to add and remove. This
+- Conflict states are represented by a series of states to add and remove. This
   does not work with the patch-based copy info. We spent a lot of time trying
   to figure out a solution that works, but it seems like the snapshot-based
   conflict model and the patch-based copy info model are not reconcilable.
   Therefore, we won't track conflicted copy info, such as between a `foo`->`baz`
   rename and a `bar`->`baz` rename.
-* Since copy records are relative to the auto-merged parents, that unfortunately
+- Since copy records are relative to the auto-merged parents, that unfortunately
   means that the records will depend on the merge algorithm, so it's possible
   that a future change to the merge algorithm will make some copy records
   invalid. We will therefore need to not assume that the copy source exists.
@@ -840,6 +841,7 @@ information.
 [same_change_rule]: https://github.com/martinvonz/jj/blob/560d66ecee5a9904b42dbc0b89333f0c27c683de/lib/src/merge.rs#L98-L111
 
 [^martinvonz_slow]: This took me (@martinvonz) months to really understand.
+
 [^mercurial_changeset_copies]: From around
     <https://repo.mercurial-scm.org/hg/rev/49ad315b39ee>, Mercurial also
     supports storing copy info in commits. That made it the kind of

@@ -181,7 +181,7 @@ form of a `WorkingCopyPatterns` is defined as the form such that:
 ### Working Copy Map
 
 !!! warning
-    This section is intentionally lacking, more research is needed.
+This section is intentionally lacking, more research is needed.
 
 All `WorkingCopyPatterns` will come equipped with a default no-op mapping.
 These mappings are inspired by and similar to [Perforce client views](https://www.perforce.com/manuals/cmdref/Content/CmdRef/views.html).
@@ -291,8 +291,8 @@ missing working copy infos with a default `WorkingCopyPatterns` as needed.
 #### Related Work
 
 [Perforce client maps](https://www.perforce.com/manuals/cmdref/Content/CmdRef/views.html)
- are very similar in concept to the entirety of `WorkingCopyPatterns`, and this
- design aims to achieve similar functionality.
+are very similar in concept to the entirety of `WorkingCopyPatterns`, and this
+design aims to achieve similar functionality.
 
 The [Josh Project](https://github.com/josh-project/josh) implements partial git
 clones in a way similar to how sparse patterns try to work.
