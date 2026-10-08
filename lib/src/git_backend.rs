@@ -1184,10 +1184,8 @@ impl Backend for GitBackend {
             .iter()
             .map(|entry| -> BackendResult<_> {
                 let entry = entry.map_err(|err| to_read_object_err(err, id))?;
-                let name = RepoPathComponentBuf::new(
-                    str::from_utf8(entry.filename()).map_err(|err| to_invalid_utf8_err(err, id))?,
-                )
-                .unwrap();
+                let name = RepoPathComponentBuf::from_raw_bytes(entry.filename())
+                    .map_err(|error| BackendError::Other(Box::new(error)))?;
                 let value = match entry.mode().kind() {
                     gix::object::tree::EntryKind::Tree => {
                         let id = TreeId::from_bytes(entry.oid().as_bytes());
@@ -1232,11 +1230,17 @@ impl Backend for GitBackend {
     async fn write_tree(&self, _path: &RepoPath, contents: &Tree) -> BackendResult<TreeId> {
         // Tree entries to be written must be sorted by Entry::filename(), which
         // is slightly different from the order of our backend::Tree.
-        let entries = contents
+        let mut entries = contents
             .entries()
-            .map(|entry| {
-                let filename = BString::from(entry.name().as_internal_str());
-                match entry.value() {
+            .map(|entry| -> BackendResult<_> {
+                let filename = BString::from(
+                    entry
+                        .name()
+                        .to_raw_bytes()
+                        .map_err(|error| BackendError::Other(Box::new(error)))?
+                        .as_ref(),
+                );
+                Ok(match entry.value() {
                     TreeValue::File {
                         id,
                         executable: false,
@@ -1270,10 +1274,10 @@ impl Backend for GitBackend {
                         filename,
                         oid: gix::ObjectId::from_bytes_or_panic(id.as_bytes()),
                     },
-                }
+                })
             })
-            .sorted_unstable()
-            .collect();
+            .try_collect::<_, Vec<_>, _>()?;
+        entries.sort_unstable();
         let locked_repo = self.lock_git_repo();
         let oid = locked_repo
             .write_object(gix::objs::Tree { entries })

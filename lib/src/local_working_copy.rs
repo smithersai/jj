@@ -116,6 +116,7 @@ use crate::ref_name::WorkspaceNameBuf;
 use crate::repo_path::RepoPath;
 use crate::repo_path::RepoPathBuf;
 use crate::repo_path::RepoPathComponent;
+use crate::repo_path::RepoPathComponentBuf;
 use crate::settings::UserSettings;
 use crate::store::Store;
 use crate::working_copy::CheckoutError;
@@ -688,7 +689,7 @@ fn create_parent_dirs(
     let mut dir_path = working_copy_path.to_owned();
     for c in parent_path.components() {
         // Ensure that the name is a normal entry of the current dir_path.
-        dir_path.push(c.to_fs_name().map_err(|err| err.with_path(repo_path))?);
+        dir_path.push(c.to_fs_os_name().map_err(|err| err.with_path(repo_path))?);
         // A directory named ".git" or ".jj" can be temporarily created. It
         // might trick workspace path discovery, but is harmless so long as the
         // directory is empty.
@@ -722,7 +723,7 @@ fn create_parent_dirs(
     let mut file_path = dir_path;
     file_path.push(
         basename
-            .to_fs_name()
+            .to_fs_os_name()
             .map_err(|err| err.with_path(repo_path))?,
     );
     Ok(Some(file_path))
@@ -1351,7 +1352,7 @@ impl TreeState {
                 tree_entries_tx,
                 file_states_tx,
                 untracked_paths_tx,
-                invalid_utf8_paths_tx,
+                _invalid_utf8_paths_tx: invalid_utf8_paths_tx,
                 deleted_files_tx,
                 error: OnceLock::new(),
                 progress: *progress,
@@ -1541,7 +1542,7 @@ struct FileSnapshotter<'a> {
     tree_entries_tx: Sender<(RepoPathBuf, MergedTreeValue)>,
     file_states_tx: Sender<(RepoPathBuf, FileState)>,
     untracked_paths_tx: Sender<(RepoPathBuf, UntrackedReason)>,
-    invalid_utf8_paths_tx: Sender<(RepoPathBuf, OsString)>,
+    _invalid_utf8_paths_tx: Sender<(RepoPathBuf, OsString)>,
     deleted_files_tx: Sender<RepoPathBuf>,
     error: OnceLock<SnapshotError>,
     progress: Option<&'a SnapshotProgress<'a>>,
@@ -1719,16 +1720,13 @@ impl FileSnapshotter<'_> {
     ) -> Result<Option<(PresentDirEntryKind, String)>, SnapshotError> {
         let file_type = entry.file_type().unwrap();
         let file_name = entry.file_name();
-        let name_string = match file_name.into_string() {
-            Ok(name_string) => name_string,
-            Err(name) => {
-                // A path that isn't valid UTF-8 can't be represented as a
-                // RepoPath, so it can never be tracked. Skip it instead of
-                // failing the whole snapshot, and let the caller report it.
-                self.invalid_utf8_paths_tx.send((dir.to_owned(), name)).ok();
-                return Ok(None);
-            }
-        };
+        let name_string = RepoPathComponentBuf::from_raw_bytes(file_name.as_encoded_bytes())
+            .map_err(|error| SnapshotError::Other {
+                message: "invalid filesystem name".into(),
+                err: error.into(),
+            })?
+            .as_internal_str()
+            .to_owned();
 
         if RESERVED_DIR_NAMES.contains(&name_string.as_str()) {
             return Ok(None);

@@ -131,8 +131,11 @@ impl GitIgnoreFile {
             if let Some(relative_path) = path.strip_prefix(&file.prefix)
                 && !relative_path.is_root()
             {
+                let Ok(raw_path) = relative_path.to_raw_bytes() else {
+                    return true;
+                };
                 let m = file.matcher.pattern_matching_relative_path(
-                    relative_path.as_internal_file_string().as_ref(),
+                    raw_path.as_ref().into(),
                     Some(is_dir),
                     gix_ignore::glob::pattern::Case::Sensitive,
                 );
@@ -150,6 +153,29 @@ impl GitIgnoreFile {
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn raw_name_patterns_match_original_bytes_and_negation() {
+        let file = GitIgnoreFile::empty()
+            .chain(
+                RepoPath::root(),
+                Path::new(".gitignore"),
+                b"raw-?.ts\n!raw-\xff.ts\nliteral-\xfe.ts\n",
+            )
+            .unwrap();
+        let path = |bytes: &[u8]| {
+            RepoPathBuf::from_internal_string(
+                crate::repo_path::RepoPathComponentBuf::from_raw_bytes(bytes)
+                    .unwrap()
+                    .as_internal_str(),
+            )
+            .unwrap()
+        };
+        assert!(!file.matches_file(&path(b"raw-\xff.ts")));
+        assert!(file.matches_file(&path(b"raw-\xfe.ts")));
+        assert!(file.matches_file(&path(b"literal-\xfe.ts")));
+        assert!(!file.matches_file(&path(b"literal-\xff.ts")));
+    }
 
     // Would ideally be a constant, but we can't create a Path at compile time.
     fn ignore_path() -> &'static Path {

@@ -16,8 +16,11 @@
 //! as directory separators regardless of platform. It is always valid UTF-8.
 
 use std::borrow::Borrow;
+use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::ffi::OsStr;
+use std::ffi::OsString;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
@@ -43,7 +46,45 @@ pub struct RepoPathComponentBuf {
     value: String,
 }
 
+// Git names are bytes. The persisted path model remains UTF-8, using NUL+two
+// uppercase hex digits for each invalid UTF-8 byte. NUL is impossible in a Git
+// or filesystem component, so valid names and historical paths are unchanged.
+// Decode only canonical spellings; encoded separators or valid UTF-8 aliases
+// cannot create a second identity for the same filesystem name.
+fn encode_raw_name(mut bytes: &[u8]) -> String {
+    use std::fmt::Write as _;
+    let mut value = String::new();
+    loop {
+        match std::str::from_utf8(bytes) {
+            Ok(tail) => {
+                value.push_str(tail);
+                break;
+            }
+            Err(error) => {
+                value.push_str(std::str::from_utf8(&bytes[..error.valid_up_to()]).unwrap());
+                bytes = &bytes[error.valid_up_to()..];
+                let invalid = error.error_len().unwrap_or(bytes.len());
+                for byte in &bytes[..invalid] {
+                    write!(value, "\0{byte:02X}").unwrap();
+                }
+                bytes = &bytes[invalid..];
+            }
+        }
+    }
+    value
+}
+
 impl RepoPathComponentBuf {
+    /// Constructs one lossless component from a Git or filesystem name.
+    pub fn from_raw_bytes(bytes: &[u8]) -> Result<Self, InvalidNewRepoPathError> {
+        if bytes.contains(&0) {
+            return Err(InvalidNewRepoPathError {
+                value: encode_raw_name(bytes),
+            });
+        }
+        Self::new(encode_raw_name(bytes))
+    }
+
     /// Wraps `value` as `RepoPathComponentBuf`.
     ///
     /// Returns an error if the input `value` is empty or contains path
@@ -91,12 +132,79 @@ impl RepoPathComponent {
     /// Returns a normal filesystem entry name if this path component is valid
     /// as a file/directory name.
     pub fn to_fs_name(&self) -> Result<&str, InvalidRepoPathComponentError> {
-        let mut components = Path::new(&self.value).components().fuse();
+        let name = self.to_fs_os_name()?;
+        if name == OsStr::new(&self.value) {
+            Ok(&self.value)
+        } else {
+            Err(InvalidRepoPathComponentError {
+                component: self.value.into(),
+            })
+        }
+    }
+
+    /// Returns the original bytes of a Git tree entry, refusing noncanonical
+    /// escapes and NUL. A raw name never becomes an escaped Git filename.
+    pub fn to_raw_bytes(&self) -> Result<Cow<'_, [u8]>, InvalidRepoPathComponentError> {
+        let invalid = || InvalidRepoPathComponentError {
+            component: self.value.into(),
+        };
+        if !self.value.contains('\0') {
+            return Ok(Cow::Borrowed(self.value.as_bytes()));
+        }
+        let source = self.value.as_bytes();
+        let mut bytes = Vec::with_capacity(source.len());
+        let mut n = 0;
+        while n < source.len() {
+            if source[n] != 0 {
+                bytes.push(source[n]);
+                n += 1;
+                continue;
+            }
+            let hex = source.get(n + 1..n + 3).ok_or_else(invalid)?;
+            let digit = |b| match b {
+                b'0'..=b'9' => Some(b - b'0'),
+                b'A'..=b'F' => Some(b - b'A' + 10),
+                _ => None,
+            };
+            let byte =
+                digit(hex[0]).ok_or_else(invalid)? * 16 + digit(hex[1]).ok_or_else(invalid)?;
+            if byte < 128 {
+                return Err(invalid());
+            }
+            bytes.push(byte);
+            n += 3;
+        }
+        if encode_raw_name(&bytes) != self.value {
+            return Err(invalid());
+        }
+        Ok(Cow::Owned(bytes))
+    }
+
+    /// Converts to a single physical component with the usual parent-directory
+    /// and platform separator checks, including when its name is not UTF-8.
+    pub fn to_fs_os_name(&self) -> Result<Cow<'_, OsStr>, InvalidRepoPathComponentError> {
+        let bytes = self.to_raw_bytes()?;
+        let name: Cow<'_, OsStr> = match bytes {
+            Cow::Borrowed(_) => Cow::Borrowed(OsStr::new(&self.value)),
+            Cow::Owned(bytes) => {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::ffi::OsStringExt as _;
+                    Cow::Owned(OsString::from_vec(bytes))
+                }
+                #[cfg(not(unix))]
+                {
+                    Cow::Owned(OsString::from(String::from_utf8(bytes).map_err(|_| {
+                        InvalidRepoPathComponentError {
+                            component: self.value.into(),
+                        }
+                    })?))
+                }
+            }
+        };
+        let mut components = Path::new(&*name).components().fuse();
         match (components.next(), components.next()) {
-            // Trailing "." can be normalized by Path::components(), so compare
-            // component name. e.g. "foo\." (on Windows) should be rejected.
-            (Some(Component::Normal(name)), None) if name == &self.value => Ok(&self.value),
-            // e.g. ".", "..", "foo\bar" (on Windows)
+            (Some(Component::Normal(component)), None) if component == &*name => Ok(name),
             _ => Err(InvalidRepoPathComponentError {
                 component: self.value.into(),
             }),
@@ -270,12 +378,7 @@ impl RepoPathBuf {
         let mut components = relative_path
             .components()
             .map(|c| match c {
-                Component::Normal(name) => {
-                    name.to_str()
-                        .ok_or_else(|| RelativePathParseError::InvalidUtf8 {
-                            path: relative_path.into(),
-                        })
-                }
+                Component::Normal(name) => Ok(encode_raw_name(name.as_encoded_bytes())),
                 _ => Err(RelativePathParseError::InvalidComponent {
                     component: c.as_os_str().to_string_lossy().into(),
                     path: relative_path.into(),
@@ -284,11 +387,11 @@ impl RepoPathBuf {
             .fuse();
         let mut value = String::with_capacity(relative_path.as_os_str().len());
         if let Some(name) = components.next() {
-            value.push_str(name?);
+            value.push_str(&name?);
         }
         for name in components {
             value.push('/');
-            value.push_str(name?);
+            value.push_str(&name?);
         }
         Ok(Self { value })
     }
@@ -340,6 +443,25 @@ impl RepoPath {
         &self.value
     }
 
+    /// Original Git path bytes, separated by ASCII slashes.
+    pub fn to_raw_bytes(&self) -> Result<Cow<'_, [u8]>, InvalidRepoPathError> {
+        if !self.value.contains('\0') {
+            return Ok(Cow::Borrowed(self.value.as_bytes()));
+        }
+        let mut bytes = Vec::with_capacity(self.value.len());
+        for component in self.components() {
+            if !bytes.is_empty() {
+                bytes.push(b'/');
+            }
+            bytes.extend_from_slice(
+                &component
+                    .to_raw_bytes()
+                    .map_err(|error| error.with_path(self))?,
+            );
+        }
+        Ok(Cow::Owned(bytes))
+    }
+
     /// Converts repository path to filesystem path relative to the `base`.
     ///
     /// The returned path should never contain `..`, `C:` (on Windows), etc.
@@ -348,7 +470,7 @@ impl RepoPath {
         let mut result = PathBuf::with_capacity(base.as_os_str().len() + self.value.len() + 1);
         result.push(base);
         for c in self.components() {
-            result.push(c.to_fs_name().map_err(|err| err.with_path(self))?);
+            result.push(c.to_fs_os_name().map_err(|err| err.with_path(self))?);
         }
         if result.as_os_str().is_empty() {
             result.push(".");
@@ -364,7 +486,11 @@ impl RepoPath {
     pub fn to_fs_path_unchecked(&self, base: &Path) -> PathBuf {
         let mut result = PathBuf::with_capacity(base.as_os_str().len() + self.value.len() + 1);
         result.push(base);
-        result.extend(self.components().map(RepoPathComponent::as_internal_str));
+        result.extend(self.components().map(|component| {
+            component
+                .to_fs_os_name()
+                .unwrap_or_else(|_| Cow::Borrowed(OsStr::new(component.as_internal_str())))
+        }));
         if result.as_os_str().is_empty() {
             result.push(".");
         }
@@ -732,6 +858,74 @@ impl<V: Debug> Debug for RepoPathTree<V> {
                     .sorted_unstable_by_key(|&(name, _)| name),
             )
             .finish()
+    }
+}
+
+#[cfg(all(test, unix))]
+mod raw_name_tests {
+    use std::os::unix::ffi::OsStrExt as _;
+
+    use super::*;
+    #[test]
+    fn raw_names_round_trip_without_aliases_or_filesystem_escapes() {
+        for byte in 1u8..=255 {
+            if byte == b'/' {
+                continue;
+            }
+            let original = [b'x', byte, b'.', b't', b's'];
+            let path = RepoPathComponentBuf::from_raw_bytes(&original).unwrap();
+            assert_eq!(path.to_raw_bytes().unwrap().as_ref(), original);
+            assert_eq!(path.to_fs_os_name().unwrap().as_bytes(), original);
+            if std::str::from_utf8(&original).is_err() {
+                assert!(path.to_fs_name().is_err());
+            }
+            let relative = Path::new(OsStr::from_bytes(&original));
+            assert_eq!(
+                RepoPathBuf::from_relative_path(relative)
+                    .unwrap()
+                    .to_fs_path(Path::new("base"))
+                    .unwrap(),
+                Path::new("base").join(relative)
+            );
+        }
+        for bytes in [
+            b"\xff\x80.ts".as_slice(),
+            b"\xf0\x90\x80.ts",
+            b"\xe2\x82.ts",
+            b"valid-\xc3\xa9-\xff.ts",
+            b"tail-\xe2\x82",
+        ] {
+            let path = RepoPathComponentBuf::from_raw_bytes(bytes).unwrap();
+            assert_eq!(path.to_fs_os_name().unwrap().as_bytes(), bytes);
+        }
+        assert_eq!(
+            RepoPathComponentBuf::from_raw_bytes(b"a\xff.ts")
+                .unwrap()
+                .as_internal_str(),
+            "a\0FF.ts"
+        );
+        for name in [
+            "..",
+            ".",
+            "\0",
+            "\0FF/child",
+            "\x002F",
+            "\x0000",
+            "\x007F",
+            "\0ff",
+            "\0C3\0A9",
+            "\0FEgarbage\0GG",
+        ] {
+            if let Ok(path) = RepoPathComponent::new(name) {
+                assert!(path.to_fs_os_name().is_err(), "{name:?}");
+            }
+        }
+        assert!(RepoPathComponentBuf::from_raw_bytes(b"nul\0file").is_err());
+        assert!(RepoPathComponentBuf::from_raw_bytes(b"dir/file").is_err());
+        assert_ne!(
+            RepoPathComponentBuf::from_raw_bytes(b"\xff").unwrap(),
+            RepoPathComponentBuf::new("\u{fffd}").unwrap()
+        );
     }
 }
 

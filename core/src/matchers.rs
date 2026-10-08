@@ -291,8 +291,12 @@ impl Matcher for GlobsMatcher {
             .walk_to(file)
             .take_while(|(_, tail_path)| !tail_path.is_root()) // only dirs
             .any(|(sub, tail_path)| {
-                let tail = tail_path.as_internal_file_string().as_bytes();
-                sub.value().as_ref().is_some_and(|pat| pat.is_match(tail))
+                let Ok(tail) = tail_path.to_raw_bytes() else {
+                    return false;
+                };
+                sub.value()
+                    .as_ref()
+                    .is_some_and(|pat| pat.is_match(tail.as_ref()))
             })
     }
 
@@ -301,8 +305,10 @@ impl Matcher for GlobsMatcher {
         for (sub, tail_path) in self.tree.walk_to(dir) {
             // ancestor of 'dir' has patterns
             if let Some(pat) = &sub.value() {
-                let tail = tail_path.as_internal_file_string().as_bytes();
-                if self.matches_prefix_paths && pat.is_match(tail) {
+                let Ok(tail) = tail_path.to_raw_bytes() else {
+                    continue;
+                };
+                if self.matches_prefix_paths && pat.is_match(tail.as_ref()) {
                     // 'dir' matches prefix patterns
                     return Visit::AllRecursively;
                 } else {
@@ -592,6 +598,27 @@ impl<M1: Matcher, M2: Matcher> Matcher for IntersectionMatcher<M1, M2> {
                 }
             },
         }
+    }
+}
+
+#[cfg(all(test, unix))]
+mod raw_glob_tests {
+    use super::*;
+    use crate::repo_path::RepoPathBuf;
+    #[test]
+    fn glob_question_mark_matches_one_original_byte() {
+        let glob = PathGlobPattern::parse("raw-?.ts").unwrap();
+        let mut builder = GlobsMatcher::builder();
+        builder.add(RepoPath::root(), &glob);
+        let matcher = builder.build();
+        let raw = RepoPathComponentBuf::from_raw_bytes(b"raw-\xff.ts").unwrap();
+        assert!(
+            matcher.matches(&RepoPathBuf::from_internal_string(raw.as_internal_str()).unwrap())
+        );
+        let raw = RepoPathComponentBuf::from_raw_bytes(b"raw-\xff\xfe.ts").unwrap();
+        assert!(
+            !matcher.matches(&RepoPathBuf::from_internal_string(raw.as_internal_str()).unwrap())
+        );
     }
 }
 

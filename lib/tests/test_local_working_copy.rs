@@ -1503,8 +1503,7 @@ fn test_snapshot_special_file() -> TestResult {
 #[cfg(unix)]
 #[test]
 fn test_snapshot_non_utf8_path() -> TestResult {
-    // Tests that paths that can't be represented as RepoPaths are skipped
-    // instead of failing the whole snapshot. #9774
+    // Byte names are represented losslessly and captured with ordinary names.
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt as _;
 
@@ -1538,23 +1537,22 @@ fn test_snapshot_non_utf8_path() -> TestResult {
         .finish(OperationId::from_hex("abc123"))
         .block_on()?;
 
-    // Only the path with a valid UTF-8 name should be in the tree. The
-    // directory isn't descended into, so it's reported as a single path.
+    let actual = tree
+        .entries_stream()
+        .map(|(path, _value)| path.to_fs_path(&workspace_root).unwrap())
+        .collect::<std::collections::BTreeSet<_>>()
+        .block_on();
     assert_eq!(
-        tree.entries_stream()
-            .map(|(path, _value)| path)
-            .collect::<Vec<_>>()
-            .block_on(),
-        to_owned_path_vec(&[file_path])
-    );
-    assert_eq!(
-        stats.invalid_utf8_paths,
+        actual,
         [
-            (RepoPathBuf::root(), bad_dir_name.to_owned()),
-            (RepoPathBuf::root(), bad_file_name.to_owned()),
+            workspace_root.join("file"),
+            workspace_root.join(bad_file_name),
+            bad_dir_disk_path.join("file")
         ]
-        .into()
+        .into_iter()
+        .collect()
     );
+    assert!(stats.invalid_utf8_paths.is_empty());
     assert!(stats.untracked_paths.is_empty());
     Ok(())
 }
