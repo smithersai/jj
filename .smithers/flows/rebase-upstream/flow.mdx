@@ -1,0 +1,28 @@
+---
+description: Rebase the Smithers patch stack onto jj-vcs/jj main, check it, and propose it on one tracking issue for a maintainer to accept.
+flows: []
+capabilities: ["fs:read:**", "proc:spawn:*"]
+budget:
+  tokens: 200000
+  milliseconds: 7200000
+---
+
+# Rebase onto jj-vcs/jj
+
+Run exactly one command through the `bash` tool, from the repository root:
+
+```sh
+bash .smithers/flows/rebase-upstream/rebase.sh
+```
+
+It fetches jj-vcs/jj main, rebases the `smithers` branch onto it, runs the
+tests, clippy and the wasm32-wasip1 build, and writes the result to the one
+open GitHub issue labeled `rebase-upstream`. It never moves `smithers`.
+
+Do not resolve conflicts, edit files, push, or move any branch yourself. Do
+not run any other command.
+
+## Finish
+
+Return the script's last line of output and its exit status. A non-zero exit
+is a reported failure, not an error to work around.

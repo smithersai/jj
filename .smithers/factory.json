@@ -1,0 +1,55 @@
+{
+  "summary": "Keeps the Smithers patch stack rebased on jj-vcs/jj.",
+  "flows": [
+    {
+      "id": "rebase-upstream",
+      "description": "Rebase the Smithers patch stack onto jj-vcs/jj main, check it, and propose it on one tracking issue for a maintainer to accept.",
+      "summary": "Rebase the Smithers patch stack onto jj-vcs/jj main and propose it.",
+      "featured": false,
+      "kind": "mdx",
+      "path": ".smithers/flows/rebase-upstream/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:*"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "inputSchema": {
+        "dialect": "draft-2020-12",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "args"
+          ],
+          "additionalProperties": true
+        },
+        "definitions": {}
+      },
+      "flows": [],
+      "budget": {
+        "tokens": 200000,
+        "milliseconds": 7200000
+      }
+    }
+  ],
+  "on": [
+    {
+      "event": "schedule:0 6 * * *",
+      "flow": "rebase-upstream",
+      "description": "Rebase onto jj-vcs/jj daily"
+    }
+  ],
+  "github": {
+    "mirror": "pull",
+    "issues": "two-way",
+    "changes": "send-upstream",
+    "maintainers": [
+      "roninjin10"
+    ]
+  }
+}
