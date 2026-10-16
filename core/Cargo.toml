@@ -55,6 +55,9 @@ maplit = { workspace = true }
 sapling-renderdag = { workspace = true }
 test-case = { workspace = true }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix = { workspace = true }
+
 [target.'cfg(windows)'.dependencies]
 same-file = { workspace = true }
 winreg = { workspace = true }

@@ -2711,6 +2711,7 @@ dependencies = [
  "pollster",
  "ref-cast",
  "regex",
+ "rustix",
  "same-file",
  "sapling-renderdag",
  "serde",
